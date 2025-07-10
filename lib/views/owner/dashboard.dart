@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tuition_app/services/auth/auth_service.dart';
 import 'package:tuition_app/enums/menu_action.dart';
+import 'package:tuition_app/views/owner/class_management_view.dart';
+import 'package:tuition_app/views/owner/student_management_view.dart';
 
 class OwnerView extends StatefulWidget {
   const OwnerView({super.key});
@@ -40,7 +42,100 @@ class _OwnerViewState extends State<OwnerView> {
           ),
         ],
       ),
-      body: const Center(child: Text('Dashboard View')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          children: [
+            _buildDashboardCard(
+              context,
+              'Classes',
+              Icons.school,
+              Colors.blue,
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ClassManagementView(),
+                ),
+              ),
+            ),
+            _buildDashboardCard(
+              context,
+              'Students',
+              Icons.people,
+              Colors.green,
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const StudentManagementView(),
+                ),
+              ),
+            ),
+            _buildDashboardCard(
+              context,
+              'Teachers',
+              Icons.person,
+              Colors.orange,
+              () {
+                // TODO: Navigate to teacher management
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Teacher management coming soon!'),
+                  ),
+                );
+              },
+            ),
+            _buildDashboardCard(
+              context,
+              'Reports',
+              Icons.analytics,
+              Colors.purple,
+              () {
+                // TODO: Navigate to reports
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Reports coming soon!')),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDashboardCard(
+    BuildContext context,
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return Card(
+      elevation: 4,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 48, color: color),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
