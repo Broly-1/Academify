@@ -1,4 +1,4 @@
 const loginRoute = '/login/';
 const registerRoute = '/register/';
-const Owner = '/owner/';
+const owner = '/owner/';
 const verifyEmailRoute = '/verify-email/';

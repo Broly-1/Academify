@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tuition_app/models/class_model.dart';
+import 'package:tuition_app/services/attendance_service.dart';
 
 class ClassService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -53,9 +54,13 @@ class ClassService {
     }
   }
 
-  // Delete a class
+  // Delete a class and all associated attendance records
   static Future<void> deleteClass(String classId) async {
     try {
+      // First delete all attendance records for this class
+      await AttendanceService.deleteAllClassAttendance(classId);
+
+      // Then delete the class itself
       await _firestore.collection(_collection).doc(classId).delete();
     } catch (e) {
       throw Exception('Failed to delete class: $e');

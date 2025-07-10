@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:tuition_app/services/auth/auth_service.dart';
@@ -23,7 +25,7 @@ void main() async {
       home: const HomePage(),
       routes: {
         loginRoute: (context) => const LoginView(),
-        Owner: (context) => const OwnerView(),
+        owner: (context) => const OwnerView(),
       },
     ),
   );
@@ -47,9 +49,21 @@ class _HomePageState extends State<HomePage> {
         await TeacherService.createOrUpdateTeacherProfile(email, displayName);
       }
     } catch (e) {
-      // If there's an error, we'll still let them proceed
-      // The error could be because the profile already exists
-      print('Error creating teacher profile: $e');
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Error'),
+            content: Text('Failed to create or update teacher profile: $e'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 

@@ -295,6 +295,29 @@ class AttendanceService {
     }
   }
 
+  // Delete ALL attendance records for a class (used when deleting a class)
+  static Future<void> deleteAllClassAttendance(String classId) async {
+    try {
+      // Get all attendance records for this class
+      final querySnapshot = await _firestore
+          .collection(_collection)
+          .where('classId', isEqualTo: classId)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final batch = _firestore.batch();
+
+        for (final doc in querySnapshot.docs) {
+          batch.delete(doc.reference);
+        }
+
+        await batch.commit();
+      }
+    } catch (e) {
+      throw Exception('Failed to delete all class attendance: $e');
+    }
+  }
+
   // Mark attendance with duplicate prevention
   static Future<void> markBulkAttendanceWithDuplicatePrevention(
     List<Attendance> attendanceList,

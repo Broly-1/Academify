@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:tuition_app/firebase_options.dart';
 import 'package:tuition_app/services/auth/auth_service.dart';
+import 'package:tuition_app/services/auth/auth_exceptions.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -243,7 +244,7 @@ class _LoginViewState extends State<LoginView> {
 
                         // Footer
                         Text(
-                          'Made with ❤️ for Education',
+                          'Made by Broly',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey[500],
@@ -302,30 +303,24 @@ class _LoginViewState extends State<LoginView> {
       }
     } catch (e) {
       String errorMessage;
-      if (e.toString().contains('invalid-credential')) {
-        errorMessage = 'Invalid email or password.';
-      } else if (e.toString().contains('user-not-found')) {
-        errorMessage = 'No account found with this email.';
-      } else if (e.toString().contains('wrong-password')) {
-        errorMessage = 'Incorrect password.';
-      } else if (e.toString().contains('too-many-requests')) {
-        errorMessage = 'Too many failed attempts. Please try again later.';
+
+      // Handle our custom auth exceptions
+      if (e is InvalidCredentialAuthException) {
+        errorMessage =
+            'Invalid email or password. Please check your credentials.';
+      } else if (e is InvalidEmailAuthException) {
+        errorMessage = 'Please enter a valid email address.';
+      } else if (e is GenericAuthException) {
+        errorMessage = 'Authentication failed. Please try again.';
+      } else if (e is UserNotLoggedInAuthException) {
+        errorMessage = 'Please log in to continue.';
       } else {
+        // Fallback for any other exceptions
         errorMessage = 'Login failed. Please try again.';
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.red,
-            action: SnackBarAction(
-              label: 'Dismiss',
-              textColor: Colors.white,
-              onPressed: () {},
-            ),
-          ),
-        );
+        _showErrorDialog(errorMessage);
       }
     } finally {
       if (mounted) {
@@ -334,5 +329,70 @@ class _LoginViewState extends State<LoginView> {
         });
       }
     }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.error_outline,
+                  color: Colors.red,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Login Error',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            message,
+            style: const TextStyle(fontSize: 16, color: Colors.black87),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.red.withOpacity(0.1),
+                foregroundColor: Colors.red,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'OK',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
