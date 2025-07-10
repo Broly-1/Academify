@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tuition_app/models/class_model.dart';
+import 'package:tuition_app/models/teacher.dart';
 import 'package:tuition_app/services/class_service.dart';
+import 'package:tuition_app/services/teacher_service.dart';
 
 class EditClassView extends StatefulWidget {
   final ClassModel classModel;
@@ -19,6 +21,8 @@ class _EditClassViewState extends State<EditClassView> {
   late final TextEditingController _monthlyFeeController;
 
   bool _isLoading = false;
+  Teacher? _selectedTeacher;
+  List<Teacher> _teachers = [];
 
   @override
   void initState() {
@@ -29,6 +33,41 @@ class _EditClassViewState extends State<EditClassView> {
     _monthlyFeeController = TextEditingController(
       text: widget.classModel.monthlyFee.toString(),
     );
+    _loadTeachersAndCurrentTeacher();
+  }
+
+  Future<void> _loadTeachersAndCurrentTeacher() async {
+    try {
+      final teachersStream = TeacherService.getAllTeachers();
+      final teachers = await teachersStream.first;
+
+      Teacher? currentTeacher;
+      if (widget.classModel.teacherId != null) {
+        currentTeacher = teachers.firstWhere(
+          (teacher) => teacher.id == widget.classModel.teacherId,
+          orElse: () => Teacher(id: '', name: 'Unknown Teacher', email: ''),
+        );
+        if (currentTeacher.id.isEmpty) {
+          currentTeacher = null;
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _teachers = teachers;
+          _selectedTeacher = currentTeacher;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading teachers: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -133,6 +172,32 @@ class _EditClassViewState extends State<EditClassView> {
                           return null;
                         },
                       ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<Teacher>(
+                        decoration: const InputDecoration(
+                          labelText: 'Teacher (Optional)',
+                          border: OutlineInputBorder(),
+                        ),
+                        value: _selectedTeacher,
+                        items: [
+                          const DropdownMenuItem<Teacher>(
+                            value: null,
+                            child: Text('No teacher assigned'),
+                          ),
+                          ..._teachers.map((teacher) {
+                            return DropdownMenuItem(
+                              value: teacher,
+                              child: Text(teacher.name),
+                            );
+                          }).toList(),
+                        ],
+                        onChanged: (teacher) {
+                          setState(() {
+                            _selectedTeacher = teacher;
+                          });
+                        },
+                        hint: const Text('Select a teacher'),
+                      ),
                     ],
                   ),
                 ),
@@ -177,6 +242,7 @@ class _EditClassViewState extends State<EditClassView> {
         section: _sectionController.text.trim().toUpperCase(),
         year: _yearController.text.trim(),
         monthlyFee: double.parse(_monthlyFeeController.text.trim()),
+        teacherId: _selectedTeacher?.id,
       );
 
       await ClassService.updateClass(updatedClass);

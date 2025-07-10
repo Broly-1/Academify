@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tuition_app/services/auth/auth_service.dart';
 import 'package:tuition_app/services/auth/auth_user.dart';
+import 'package:tuition_app/services/teacher_service.dart';
 import 'package:tuition_app/views/login_view.dart';
 import 'package:tuition_app/views/owner/dashboard.dart';
 import 'package:tuition_app/views/teacher/dashboard.dart';
@@ -34,6 +35,22 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // Method to ensure teacher profile exists when non-owner users log in
+  Future<void> _ensureTeacherProfile(AuthUser user) async {
+    try {
+      final email = user.email ?? '';
+      if (email.isNotEmpty) {
+        // Extract display name from email (part before @)
+        final displayName = email.split('@').first;
+        await TeacherService.createOrUpdateTeacherProfile(email, displayName);
+      }
+    } catch (e) {
+      // If there's an error, we'll still let them proceed
+      // The error could be because the profile already exists
+      print('Error creating teacher profile: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -49,7 +66,28 @@ class _HomePageState extends State<HomePage> {
                   if (user.email == 'hassangaming111@gmail.com') {
                     return const OwnerView();
                   } else {
-                    return const TeacherView();
+                    // Automatically create teacher profile for non-owner users
+                    return FutureBuilder(
+                      future: _ensureTeacherProfile(user),
+                      builder: (context, teacherSnapshot) {
+                        if (teacherSnapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Scaffold(
+                            body: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircularProgressIndicator(),
+                                  SizedBox(height: 16),
+                                  Text('Setting up your profile...'),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                        return const TeacherView();
+                      },
+                    );
                   }
                 } else {
                   return const LoginView();

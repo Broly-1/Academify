@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:tuition_app/models/class_model.dart';
+import 'package:tuition_app/models/teacher.dart';
 import 'package:tuition_app/services/class_service.dart';
+import 'package:tuition_app/services/teacher_service.dart';
 import 'package:tuition_app/views/owner/create_class_view.dart';
 import 'package:tuition_app/views/owner/edit_class_view.dart';
 import 'package:tuition_app/views/owner/assign_students_view.dart';
+import 'package:tuition_app/views/owner/assign_teacher_view.dart';
 
 class ClassManagementView extends StatelessWidget {
   const ClassManagementView({super.key});
@@ -74,14 +77,26 @@ class ClassManagementView extends StatelessWidget {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Grade ${classModel.grade} - Section ${classModel.section}',
-                      ),
                       Text('Year: ${classModel.year}'),
                       Text(
                         'Monthly Fee: ₹${classModel.monthlyFee.toStringAsFixed(0)}',
                       ),
                       Text('Students: ${classModel.studentIds.length}'),
+                      FutureBuilder<Teacher?>(
+                        future: classModel.teacherId != null
+                            ? TeacherService.getTeacher(classModel.teacherId!)
+                            : Future.value(null),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Text('Teacher: Loading...');
+                          }
+                          if (snapshot.hasData && snapshot.data != null) {
+                            return Text('Teacher: ${snapshot.data!.name}');
+                          }
+                          return const Text('Teacher: Not assigned');
+                        },
+                      ),
                     ],
                   ),
                   trailing: PopupMenuButton<String>(
@@ -102,6 +117,15 @@ class ClassManagementView extends StatelessWidget {
                             MaterialPageRoute(
                               builder: (context) =>
                                   AssignStudentsView(classModel: classModel),
+                            ),
+                          );
+                          break;
+                        case 'assign_teacher':
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  AssignTeacherView(classModel: classModel),
                             ),
                           );
                           break;
@@ -128,6 +152,16 @@ class ClassManagementView extends StatelessWidget {
                             Icon(Icons.people, color: Colors.blue),
                             SizedBox(width: 8),
                             Text('Assign Students'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'assign_teacher',
+                        child: Row(
+                          children: [
+                            Icon(Icons.person, color: Colors.orange),
+                            SizedBox(width: 8),
+                            Text('Assign Teacher'),
                           ],
                         ),
                       ),
@@ -218,7 +252,22 @@ class ClassManagementView extends StatelessWidget {
             Text('Section: ${classModel.section}'),
             Text('Year: ${classModel.year}'),
             Text('Monthly Fee: ₹${classModel.monthlyFee.toStringAsFixed(0)}'),
-            Text('Teacher: ${classModel.teacherId ?? 'Not assigned'}'),
+            FutureBuilder<Teacher?>(
+              future: classModel.teacherId != null
+                  ? TeacherService.getTeacher(classModel.teacherId!)
+                  : Future.value(null),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Text('Teacher: Loading...');
+                }
+                if (snapshot.hasData && snapshot.data != null) {
+                  return Text(
+                    'Teacher: ${snapshot.data!.name} (${snapshot.data!.email})',
+                  );
+                }
+                return const Text('Teacher: Not assigned');
+              },
+            ),
             Text('Students: ${classModel.studentIds.length}'),
           ],
         ),

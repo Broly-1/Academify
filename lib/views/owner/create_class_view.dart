@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tuition_app/models/class_model.dart';
+import 'package:tuition_app/models/teacher.dart';
 import 'package:tuition_app/services/class_service.dart';
+import 'package:tuition_app/services/teacher_service.dart';
 
 class CreateClassView extends StatefulWidget {
   const CreateClassView({super.key});
@@ -16,6 +18,7 @@ class _CreateClassViewState extends State<CreateClassView> {
   final _yearController = TextEditingController();
   final _monthlyFeeController = TextEditingController();
 
+  Teacher? _selectedTeacher;
   bool _isLoading = false;
 
   @override
@@ -128,6 +131,64 @@ class _CreateClassViewState extends State<CreateClassView> {
                           return null;
                         },
                       ),
+                      const SizedBox(height: 16),
+                      StreamBuilder<List<Teacher>>(
+                        stream: TeacherService.getAllTeachers(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return DropdownButtonFormField<Teacher>(
+                              decoration: const InputDecoration(
+                                labelText: 'Teacher (Optional)',
+                                border: OutlineInputBorder(),
+                              ),
+                              items: const [],
+                              onChanged: null,
+                              hint: const Text('Loading teachers...'),
+                            );
+                          }
+
+                          if (snapshot.hasError) {
+                            return DropdownButtonFormField<Teacher>(
+                              decoration: const InputDecoration(
+                                labelText: 'Teacher (Optional)',
+                                border: OutlineInputBorder(),
+                              ),
+                              items: const [],
+                              onChanged: null,
+                              hint: const Text('Error loading teachers'),
+                            );
+                          }
+
+                          final teachers = snapshot.data ?? [];
+
+                          return DropdownButtonFormField<Teacher>(
+                            decoration: const InputDecoration(
+                              labelText: 'Teacher (Optional)',
+                              border: OutlineInputBorder(),
+                            ),
+                            value: _selectedTeacher,
+                            items: [
+                              const DropdownMenuItem<Teacher>(
+                                value: null,
+                                child: Text('No teacher assigned'),
+                              ),
+                              ...teachers.map((teacher) {
+                                return DropdownMenuItem(
+                                  value: teacher,
+                                  child: Text(teacher.name),
+                                );
+                              }).toList(),
+                            ],
+                            onChanged: (teacher) {
+                              setState(() {
+                                _selectedTeacher = teacher;
+                              });
+                            },
+                            hint: const Text('Select a teacher'),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -173,6 +234,7 @@ class _CreateClassViewState extends State<CreateClassView> {
         section: _sectionController.text.trim().toUpperCase(),
         year: _yearController.text.trim(),
         monthlyFee: double.parse(_monthlyFeeController.text.trim()),
+        teacherId: _selectedTeacher?.id,
       );
 
       await ClassService.createClass(classModel);

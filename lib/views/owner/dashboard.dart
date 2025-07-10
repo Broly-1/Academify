@@ -3,6 +3,7 @@ import 'package:tuition_app/services/auth/auth_service.dart';
 import 'package:tuition_app/enums/menu_action.dart';
 import 'package:tuition_app/views/owner/class_management_view.dart';
 import 'package:tuition_app/views/owner/student_management_view.dart';
+import 'package:tuition_app/views/owner/teacher_management_view.dart';
 
 class OwnerView extends StatefulWidget {
   const OwnerView({super.key});
@@ -78,14 +79,12 @@ class _OwnerViewState extends State<OwnerView> {
               'Teachers',
               Icons.person,
               Colors.orange,
-              () {
-                // TODO: Navigate to teacher management
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Teacher management coming soon!'),
-                  ),
-                );
-              },
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TeacherManagementView(),
+                ),
+              ),
             ),
             _buildDashboardCard(
               context,
