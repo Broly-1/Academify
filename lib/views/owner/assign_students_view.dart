@@ -18,6 +18,7 @@ class _AssignStudentsViewState extends State<AssignStudentsView> {
   List<Student> assignedStudents = [];
   List<Student> availableStudents = [];
   bool _isLoading = true;
+  Student? _selectedStudent;
 
   @override
   void initState() {
@@ -47,6 +48,7 @@ class _AssignStudentsViewState extends State<AssignStudentsView> {
         assignedStudents = assigned;
         availableStudents = available;
         _isLoading = false;
+        _selectedStudent = null; // Reset selection
       });
     } catch (e) {
       setState(() {
@@ -67,6 +69,7 @@ class _AssignStudentsViewState extends State<AssignStudentsView> {
       setState(() {
         assignedStudents.add(student);
         availableStudents.remove(student);
+        _selectedStudent = null; // Reset dropdown selection
       });
 
       if (mounted) {
@@ -93,6 +96,7 @@ class _AssignStudentsViewState extends State<AssignStudentsView> {
       setState(() {
         assignedStudents.remove(student);
         availableStudents.add(student);
+        _selectedStudent = null; // Reset dropdown selection
       });
 
       if (mounted) {
@@ -148,13 +152,17 @@ class _AssignStudentsViewState extends State<AssignStudentsView> {
                                 labelText: 'Select Student',
                                 border: OutlineInputBorder(),
                               ),
+                              value: _selectedStudent,
                               items: availableStudents.map((student) {
-                                return DropdownMenuItem(
+                                return DropdownMenuItem<Student>(
                                   value: student,
                                   child: Text(student.name),
                                 );
                               }).toList(),
                               onChanged: (student) {
+                                setState(() {
+                                  _selectedStudent = student;
+                                });
                                 if (student != null) {
                                   _addStudent(student);
                                 }

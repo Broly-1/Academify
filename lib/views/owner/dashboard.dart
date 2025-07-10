@@ -4,6 +4,7 @@ import 'package:tuition_app/enums/menu_action.dart';
 import 'package:tuition_app/views/owner/class_management_view.dart';
 import 'package:tuition_app/views/owner/student_management_view.dart';
 import 'package:tuition_app/views/owner/teacher_management_view.dart';
+import 'package:tuition_app/views/owner/owner_attendance_management_view.dart';
 
 class OwnerView extends StatefulWidget {
   const OwnerView({super.key});
@@ -88,15 +89,15 @@ class _OwnerViewState extends State<OwnerView> {
             ),
             _buildDashboardCard(
               context,
-              'Reports',
-              Icons.analytics,
+              'Attendance',
+              Icons.assignment_turned_in,
               Colors.purple,
-              () {
-                // TODO: Navigate to reports
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Reports coming soon!')),
-                );
-              },
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const OwnerAttendanceManagementView(),
+                ),
+              ),
             ),
           ],
         ),

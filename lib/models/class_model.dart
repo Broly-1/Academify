@@ -71,4 +71,13 @@ class ClassModel {
   String toString() {
     return 'ClassModel(id: $id, grade: $grade, section: $section, year: $year, monthlyFee: $monthlyFee)';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ClassModel && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 }

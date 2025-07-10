@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:tuition_app/services/auth/auth_service.dart';
 import 'package:tuition_app/services/auth/auth_user.dart';
 import 'package:tuition_app/services/teacher_service.dart';
@@ -8,8 +9,9 @@ import 'package:tuition_app/views/teacher/dashboard.dart';
 
 import 'constants/routes.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(
     MaterialApp(
       title: 'Flutter Demo',

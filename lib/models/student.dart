@@ -36,4 +36,13 @@ class Student {
   String toString() {
     return 'Student(id: $id, name: $name, parentContact: $parentContact)';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Student && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 }
