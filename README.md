@@ -1,2 +1,0 @@
-# Academify
-app

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "485865753530",
+    "project_id": "academify-39811",
+    "storage_bucket": "academify-39811.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:485865753530:android:b0bf0e1b9ad047c8bbeb83",
+        "android_client_info": {
+          "package_name": "com.codesan.tuition_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJyYhyO9MwkJPuH4-YlJzJvkdHyr2VdEA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
