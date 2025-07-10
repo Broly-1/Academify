@@ -119,53 +119,137 @@ class _OwnerAttendanceManagementViewState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Attendance Management'),
-        backgroundColor: const Color.fromARGB(255, 73, 226, 31),
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        title: const Text(
+          'Attendance Management',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             onPressed: _selectDateRange,
-            icon: const Icon(Icons.date_range),
+            icon: const Icon(Icons.date_range, color: Colors.white),
             tooltip: 'Select Date Range',
           ),
           IconButton(
             onPressed: _loadData,
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh, color: Colors.white),
             tooltip: 'Refresh',
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4CAF50).withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const CircularProgressIndicator(
+                      color: Color(0xFF4CAF50),
+                      strokeWidth: 3,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Loading attendance data...',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            )
           : Column(
               children: [
-                // Date range info
+                // Header Section with Date Range
                 Container(
-                  padding: const EdgeInsets.all(16),
-                  color: Colors.grey[100],
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF4CAF50).withOpacity(0.3),
+                        blurRadius: 15,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
                   child: Row(
                     children: [
-                      Expanded(
-                        child: Text(
-                          'Period: ${_startDate.day}/${_startDate.month}/${_startDate.year} - ${_endDate.day}/${_endDate.month}/${_endDate.year}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.analytics,
+                          color: Colors.white,
+                          size: 28,
                         ),
                       ),
-                      ElevatedButton.icon(
-                        onPressed: _selectDateRange,
-                        icon: const Icon(Icons.date_range),
-                        label: const Text('Change'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(
-                            255,
-                            73,
-                            226,
-                            31,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Attendance Overview',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${_startDate.day}/${_startDate.month}/${_startDate.year} - ${_endDate.day}/${_endDate.month}/${_endDate.year}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: IconButton(
+                          onPressed: _selectDateRange,
+                          icon: const Icon(
+                            Icons.edit_calendar,
+                            color: Colors.white,
                           ),
-                          foregroundColor: Colors.white,
+                          tooltip: 'Change Date Range',
                         ),
                       ),
                     ],
@@ -175,10 +259,43 @@ class _OwnerAttendanceManagementViewState
                 // Classes list
                 Expanded(
                   child: _classes.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'No classes found',
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  color: const Color(
+                                    0xFF4CAF50,
+                                  ).withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.school,
+                                  size: 60,
+                                  color: Color(0xFF4CAF50),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              const Text(
+                                'No classes found',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              const Text(
+                                'Create classes to start tracking attendance',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
                           ),
                         )
                       : ListView.builder(
@@ -211,135 +328,174 @@ class _OwnerAttendanceManagementViewState
                               }
                             }
 
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 16),
-                              child: ExpansionTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: _getAttendanceColor(
-                                    overallPercentage,
+                            return Container(
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                    offset: const Offset(0, 2),
                                   ),
-                                  child: Text(
-                                    '${classModel.grade}${classModel.section}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
-                                  ),
+                                ],
+                              ),
+                              child: Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
-                                title: Text(
-                                  '${classModel.grade} ${classModel.section} (${classModel.year})',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Students: ${students.length}'),
-                                    Text(
-                                      'Days with attendance: ${dailyStats.length}',
-                                    ),
-                                    if (overallPercentage > 0)
-                                      Text(
-                                        'Average attendance: ${overallPercentage.toStringAsFixed(1)}%',
-                                        style: TextStyle(
-                                          color: _getAttendanceColor(
+                                child: ExpansionTile(
+                                  leading: Container(
+                                    width: 50,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          _getAttendanceColor(
                                             overallPercentage,
                                           ),
+                                          _getAttendanceColor(
+                                            overallPercentage,
+                                          ).withOpacity(0.7),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        '${classModel.grade}${classModel.section}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
                                           fontWeight: FontWeight.bold,
+                                          fontSize: 12,
                                         ),
                                       ),
-                                  ],
-                                ),
-                                children: [
-                                  if (students.isEmpty)
-                                    const Padding(
-                                      padding: EdgeInsets.all(16.0),
-                                      child: Text(
-                                        'No students assigned to this class',
-                                        style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    '${classModel.grade} ${classModel.section} (${classModel.year})',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Students: ${students.length}'),
+                                      Text(
+                                        'Days with attendance: ${dailyStats.length}',
                                       ),
-                                    )
-                                  else
-                                    ...students.map((student) {
-                                      return FutureBuilder<
-                                        Map<String, dynamic>
-                                      >(
-                                        future:
-                                            AttendanceService.getStudentAttendanceStats(
-                                              student.id,
-                                              classModel.id,
-                                              startDate: _startDate,
-                                              endDate: _endDate,
+                                      if (overallPercentage > 0)
+                                        Text(
+                                          'Average attendance: ${overallPercentage.toStringAsFixed(1)}%',
+                                          style: TextStyle(
+                                            color: _getAttendanceColor(
+                                              overallPercentage,
                                             ),
-                                        builder: (context, snapshot) {
-                                          final stats = snapshot.data ?? {};
-                                          final percentage =
-                                              stats['attendancePercentage'] ??
-                                              0.0;
-                                          final presentDays =
-                                              stats['presentDays'] ?? 0;
-                                          final totalDays =
-                                              stats['totalDays'] ?? 0;
-
-                                          return ListTile(
-                                            leading: CircleAvatar(
-                                              radius: 16,
-                                              backgroundColor:
-                                                  _getAttendanceColor(
-                                                    percentage,
-                                                  ),
-                                              child: Text(
-                                                student.name.isNotEmpty
-                                                    ? student.name[0]
-                                                          .toUpperCase()
-                                                    : '?',
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  children: [
+                                    if (students.isEmpty)
+                                      const Padding(
+                                        padding: EdgeInsets.all(16.0),
+                                        child: Text(
+                                          'No students assigned to this class',
+                                          style: TextStyle(color: Colors.grey),
+                                        ),
+                                      )
+                                    else
+                                      ...students.map((student) {
+                                        return FutureBuilder<
+                                          Map<String, dynamic>
+                                        >(
+                                          future:
+                                              AttendanceService.getStudentAttendanceStats(
+                                                student.id,
+                                                classModel.id,
+                                                startDate: _startDate,
+                                                endDate: _endDate,
                                               ),
-                                            ),
-                                            title: Text(student.name),
-                                            subtitle: Text(
-                                              'Contact: ${student.parentContact}',
-                                            ),
-                                            trailing: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.end,
-                                              children: [
-                                                Text(
-                                                  '${percentage.toStringAsFixed(1)}%',
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: _getAttendanceColor(
+                                          builder: (context, snapshot) {
+                                            final stats = snapshot.data ?? {};
+                                            final percentage =
+                                                stats['attendancePercentage'] ??
+                                                0.0;
+                                            final presentDays =
+                                                stats['presentDays'] ?? 0;
+                                            final totalDays =
+                                                stats['totalDays'] ?? 0;
+
+                                            return ListTile(
+                                              leading: CircleAvatar(
+                                                radius: 16,
+                                                backgroundColor:
+                                                    _getAttendanceColor(
                                                       percentage,
                                                     ),
-                                                  ),
-                                                ),
-                                                Text(
-                                                  '$presentDays/$totalDays',
-                                                  style: TextStyle(
+                                                child: Text(
+                                                  student.name.isNotEmpty
+                                                      ? student.name[0]
+                                                            .toUpperCase()
+                                                      : '?',
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
                                                     fontSize: 12,
-                                                    color: Colors.grey[600],
+                                                    fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
-                                              ],
-                                            ),
-                                            onTap: () => _viewStudentDetails(
-                                              student,
-                                              classModel,
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    }).toList(),
-                                ],
+                                              ),
+                                              title: Text(student.name),
+                                              subtitle: Text(
+                                                'Contact: ${student.parentContact}',
+                                              ),
+                                              trailing: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.end,
+                                                children: [
+                                                  Text(
+                                                    '${percentage.toStringAsFixed(1)}%',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color:
+                                                          _getAttendanceColor(
+                                                            percentage,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '$presentDays/$totalDays',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.grey[600],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              onTap: () => _viewStudentDetails(
+                                                student,
+                                                classModel,
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      }).toList(),
+                                  ],
+                                ),
                               ),
                             );
                           },

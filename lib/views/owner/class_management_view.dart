@@ -14,37 +14,43 @@ class ClassManagementView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Class Management'),
+        title: const Text(
+          'Class Management',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
         backgroundColor: const Color.fromARGB(255, 73, 226, 31),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateClassView()),
+          );
+        },
+        backgroundColor: const Color.fromARGB(255, 73, 226, 31),
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('Add Class'),
       ),
       body: StreamBuilder<List<ClassModel>>(
         stream: ClassService.getAllClasses(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          final classes = snapshot.data ?? [];
-
-          if (classes.isEmpty) {
             return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.school_outlined, size: 64, color: Colors.grey),
+                  CircularProgressIndicator(
+                    color: Color.fromARGB(255, 73, 226, 31),
+                  ),
                   SizedBox(height: 16),
                   Text(
-                    'No classes created yet',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Tap the + button to create your first class',
+                    'Loading classes...',
                     style: TextStyle(color: Colors.grey),
                   ),
                 ],
@@ -52,151 +58,397 @@ class ClassManagementView extends StatelessWidget {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: classes.length,
-            itemBuilder: (context, index) {
-              final classModel = classes[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: const Color.fromARGB(255, 73, 226, 31),
-                    child: Text(
-                      classModel.grade,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+          if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error: ${snapshot.error}',
+                    style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final classes = snapshot.data ?? [];
+
+          if (classes.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: const Icon(
+                        Icons.school_outlined,
+                        size: 64,
+                        color: Colors.grey,
                       ),
                     ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'No classes created yet',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tap the + button to create your first class',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color.fromARGB(255, 73, 226, 31),
+                        Color.fromARGB(255, 56, 180, 24),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color.fromARGB(
+                          255,
+                          73,
+                          226,
+                          31,
+                        ).withOpacity(0.3),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  title: Text(
-                    classModel.displayName,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.school,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${classes.length} ${classes.length == 1 ? 'Class' : 'Classes'}',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const Text(
+                              'Manage all your classes',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w300,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  subtitle: Column(
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final classModel = classes[index];
+                    return _buildModernClassCard(context, classModel);
+                  }, childCount: classes.length),
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildModernClassCard(BuildContext context, ClassModel classModel) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            spreadRadius: 2,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(
+                      255,
+                      73,
+                      226,
+                      31,
+                    ).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    classModel.grade,
+                    style: const TextStyle(
+                      color: Color.fromARGB(255, 73, 226, 31),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Year: ${classModel.year}'),
                       Text(
-                        'Monthly Fee: ₹${classModel.monthlyFee.toStringAsFixed(0)}',
+                        classModel.displayName,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                       ),
-                      Text('Students: ${classModel.studentIds.length}'),
-                      FutureBuilder<Teacher?>(
-                        future: classModel.teacherId != null
-                            ? TeacherService.getTeacher(classModel.teacherId!)
-                            : Future.value(null),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Text('Teacher: Loading...');
-                          }
-                          if (snapshot.hasData && snapshot.data != null) {
-                            return Text('Teacher: ${snapshot.data!.name}');
-                          }
-                          return const Text('Teacher: Not assigned');
-                        },
+                      Text(
+                        'Year: ${classModel.year}',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       ),
                     ],
                   ),
-                  trailing: PopupMenuButton<String>(
-                    onSelected: (value) async {
-                      switch (value) {
-                        case 'edit':
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  EditClassView(classModel: classModel),
-                            ),
-                          );
-                          break;
-                        case 'assign_students':
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  AssignStudentsView(classModel: classModel),
-                            ),
-                          );
-                          break;
-                        case 'assign_teacher':
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  AssignTeacherView(classModel: classModel),
-                            ),
-                          );
-                          break;
-                        case 'delete':
-                          _showDeleteDialog(context, classModel);
-                          break;
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit),
-                            SizedBox(width: 8),
-                            Text('Edit'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'assign_students',
-                        child: Row(
-                          children: [
-                            Icon(Icons.people, color: Colors.blue),
-                            SizedBox(width: 8),
-                            Text('Assign Students'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'assign_teacher',
-                        child: Row(
-                          children: [
-                            Icon(Icons.person, color: Colors.orange),
-                            SizedBox(width: 8),
-                            Text('Assign Teacher'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('Delete', style: TextStyle(color: Colors.red)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  onTap: () {
-                    // Navigate to class details view
-                    _showClassDetails(context, classModel);
-                  },
                 ),
-              );
-            },
-          );
-        },
+                PopupMenuButton<String>(
+                  icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+                  onSelected: (value) async {
+                    switch (value) {
+                      case 'edit':
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                EditClassView(classModel: classModel),
+                          ),
+                        );
+                        break;
+                      case 'assign_students':
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                AssignStudentsView(classModel: classModel),
+                          ),
+                        );
+                        break;
+                      case 'assign_teacher':
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                AssignTeacherView(classModel: classModel),
+                          ),
+                        );
+                        break;
+                      case 'delete':
+                        _showDeleteDialog(context, classModel);
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit, color: Colors.blue),
+                          SizedBox(width: 8),
+                          Text('Edit Class'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'assign_students',
+                      child: Row(
+                        children: [
+                          Icon(Icons.people, color: Colors.green),
+                          SizedBox(width: 8),
+                          Text('Assign Students'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'assign_teacher',
+                      child: Row(
+                        children: [
+                          Icon(Icons.person, color: Colors.orange),
+                          SizedBox(width: 8),
+                          Text('Assign Teacher'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('Delete'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildInfoItem(
+                          Icons.attach_money,
+                          'Monthly Fee',
+                          '₹${classModel.monthlyFee.toStringAsFixed(0)}',
+                          Colors.green,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildInfoItem(
+                          Icons.people,
+                          'Students',
+                          '${classModel.studentIds.length}',
+                          Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  FutureBuilder<Teacher?>(
+                    future: classModel.teacherId != null
+                        ? TeacherService.getTeacher(classModel.teacherId!)
+                        : Future.value(null),
+                    builder: (context, snapshot) {
+                      String teacherName = 'Not assigned';
+                      Color teacherColor = Colors.orange;
+
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        teacherName = 'Loading...';
+                      } else if (snapshot.hasData && snapshot.data != null) {
+                        teacherName = snapshot.data!.name;
+                        teacherColor = Colors.purple;
+                      }
+
+                      return _buildInfoItem(
+                        Icons.person,
+                        'Teacher',
+                        teacherName,
+                        teacherColor,
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color.fromARGB(255, 73, 226, 31),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CreateClassView()),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
+    );
+  }
+
+  Widget _buildInfoItem(
+    IconData icon,
+    String label,
+    String value,
+    Color color,
+  ) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 16, color: color),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -217,64 +469,24 @@ class ClassManagementView extends StatelessWidget {
             onPressed: () async {
               try {
                 await ClassService.deleteClass(classModel.id);
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Class deleted successfully')),
-                  );
-                }
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Class deleted successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
               } catch (e) {
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error deleting class: $e')),
-                  );
-                }
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error deleting class: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showClassDetails(BuildContext context, ClassModel classModel) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(classModel.displayName),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Grade: ${classModel.grade}'),
-            Text('Section: ${classModel.section}'),
-            Text('Year: ${classModel.year}'),
-            Text('Monthly Fee: ₹${classModel.monthlyFee.toStringAsFixed(0)}'),
-            FutureBuilder<Teacher?>(
-              future: classModel.teacherId != null
-                  ? TeacherService.getTeacher(classModel.teacherId!)
-                  : Future.value(null),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Text('Teacher: Loading...');
-                }
-                if (snapshot.hasData && snapshot.data != null) {
-                  return Text(
-                    'Teacher: ${snapshot.data!.name} (${snapshot.data!.email})',
-                  );
-                }
-                return const Text('Teacher: Not assigned');
-              },
-            ),
-            Text('Students: ${classModel.studentIds.length}'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
           ),
         ],
       ),

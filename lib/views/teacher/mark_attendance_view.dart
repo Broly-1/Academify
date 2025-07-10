@@ -64,7 +64,6 @@ class _MarkAttendanceViewState extends State<MarkAttendanceView> {
 
   Future<void> _checkAttendanceStatus() async {
     try {
-      // Normalize the selected date to remove time component
       final normalizedDate = DateTime(
         _selectedDate.year,
         _selectedDate.month,
@@ -76,7 +75,6 @@ class _MarkAttendanceViewState extends State<MarkAttendanceView> {
         normalizedDate,
       );
 
-      // If attendance is already marked, load the existing attendance data
       if (isMarked) {
         final existingAttendance =
             await AttendanceService.getClassAttendanceByDate(
@@ -87,8 +85,6 @@ class _MarkAttendanceViewState extends State<MarkAttendanceView> {
         if (mounted) {
           setState(() {
             _attendanceAlreadyMarked = isMarked;
-
-            // Update attendance status with existing data
             for (final attendance in existingAttendance) {
               _attendanceStatus[attendance.studentId] = attendance.isPresent;
               _remarks[attendance.studentId] = attendance.remarks ?? '';
@@ -103,12 +99,7 @@ class _MarkAttendanceViewState extends State<MarkAttendanceView> {
         }
       }
     } catch (e) {
-      // If there's an error checking status, assume it's not marked
-      if (mounted) {
-        setState(() {
-          _attendanceAlreadyMarked = false;
-        });
-      }
+      print('Error checking attendance status: $e');
     }
   }
 
@@ -119,40 +110,42 @@ class _MarkAttendanceViewState extends State<MarkAttendanceView> {
       firstDate: DateTime.now().subtract(const Duration(days: 30)),
       lastDate: DateTime.now(),
     );
+
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
+        _attendanceAlreadyMarked = false;
       });
-      _checkAttendanceStatus();
+      await _checkAttendanceStatus();
     }
   }
 
-  Future<void> _markAttendance() async {
+  Future<void> _saveAttendance() async {
     setState(() {
       _isSaving = true;
     });
 
     try {
-      final currentUser = AuthService.firebase().currentUser;
-      final teacherEmail = currentUser?.email ?? '';
-      final now = DateTime.now();
+      final teacherEmail = AuthService.firebase().currentUser?.email;
+      if (teacherEmail == null) {
+        throw Exception('Teacher not authenticated');
+      }
 
-      // Normalize the selected date to remove time component
       final normalizedDate = DateTime(
         _selectedDate.year,
         _selectedDate.month,
         _selectedDate.day,
       );
+      final now = DateTime.now();
 
       if (_attendanceAlreadyMarked) {
-        // Update existing attendance records
+        // Update existing records
         final existingAttendance =
             await AttendanceService.getClassAttendanceByDate(
               widget.classModel.id,
               normalizedDate,
             );
 
-        // Update each existing record
         for (final student in _students) {
           final existingRecord = existingAttendance.firstWhere(
             (record) => record.studentId == student.id,
@@ -176,17 +169,13 @@ class _MarkAttendanceViewState extends State<MarkAttendanceView> {
           );
 
           if (existingRecord.id.isNotEmpty) {
-            // Update existing record
             await AttendanceService.updateAttendance(updatedRecord);
           } else {
-            // Create new record if it doesn't exist for this student
             await AttendanceService.markAttendance(updatedRecord);
           }
         }
       } else {
         // Create new attendance records
-        final attendanceList = <Attendance>[];
-
         for (final student in _students) {
           final attendance = Attendance(
             id: '',
@@ -200,43 +189,36 @@ class _MarkAttendanceViewState extends State<MarkAttendanceView> {
             createdAt: now,
             createdBy: teacherEmail,
           );
-          attendanceList.add(attendance);
-        }
 
-        await AttendanceService.markBulkAttendanceWithDuplicatePrevention(
-          attendanceList,
-        );
+          await AttendanceService.markAttendance(attendance);
+        }
       }
 
       if (mounted) {
-        Navigator.pop(context);
+        setState(() {
+          _isSaving = false;
+          _attendanceAlreadyMarked = true;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              _attendanceAlreadyMarked
-                  ? 'Attendance updated successfully!'
-                  : 'Attendance marked successfully!',
-            ),
+          const SnackBar(
+            content: Text('Attendance saved successfully!'),
             backgroundColor: Colors.green,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Error ${_attendanceAlreadyMarked ? "updating" : "marking"} attendance: $e',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
         setState(() {
           _isSaving = false;
         });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving attendance: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -244,78 +226,192 @@ class _MarkAttendanceViewState extends State<MarkAttendanceView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: Text(
           'Mark Attendance - ${widget.classModel.grade} ${widget.classModel.section}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: const Color.fromARGB(255, 73, 226, 31),
+        backgroundColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           if (_attendanceAlreadyMarked)
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Icon(Icons.warning, color: Colors.orange),
+            Container(
+              margin: const EdgeInsets.only(right: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.orange,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.edit, color: Colors.white, size: 16),
+                  SizedBox(width: 4),
+                  Text(
+                    'Editing',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4CAF50).withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const CircularProgressIndicator(
+                      color: Color(0xFF4CAF50),
+                      strokeWidth: 3,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Loading students...',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            )
           : Column(
               children: [
-                // Date selector and info
+                // Modern Date Selector Header
                 Container(
-                  padding: const EdgeInsets.all(16),
-                  color: Colors.grey[100],
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF4CAF50).withOpacity(0.3),
+                        blurRadius: 15,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
                   child: Column(
                     children: [
                       Row(
                         children: [
-                          Expanded(
-                            child: Text(
-                              'Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.today,
+                              color: Colors.white,
+                              size: 28,
                             ),
                           ),
-                          ElevatedButton.icon(
-                            onPressed: _selectDate,
-                            icon: const Icon(Icons.calendar_today),
-                            label: const Text('Change Date'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(
-                                255,
-                                73,
-                                226,
-                                31,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Attendance Date',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                                Text(
+                                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: IconButton(
+                              onPressed: _selectDate,
+                              icon: const Icon(
+                                Icons.edit_calendar,
+                                color: Colors.white,
                               ),
-                              foregroundColor: Colors.white,
+                              tooltip: 'Change Date',
                             ),
                           ),
                         ],
                       ),
-                      if (_attendanceAlreadyMarked)
+                      if (_attendanceAlreadyMarked) ...[
+                        const SizedBox(height: 16),
                         Container(
-                          margin: const EdgeInsets.only(top: 8),
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.orange[100],
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: Colors.orange),
+                            color: Colors.orange.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.orange.withOpacity(0.5),
+                              width: 1,
+                            ),
                           ),
                           child: const Row(
                             children: [
-                              Icon(Icons.info, color: Colors.orange),
+                              Icon(
+                                Icons.info_outline,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                               SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Attendance already marked for this date. The form shows current values. You can update them and save.',
-                                  style: TextStyle(color: Colors.orange),
+                                  'Attendance already marked for this date. You can edit existing records.',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
+                      ],
                     ],
                   ),
                 ),
@@ -323,70 +419,203 @@ class _MarkAttendanceViewState extends State<MarkAttendanceView> {
                 // Students list
                 Expanded(
                   child: _students.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'No students assigned to this class',
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  color: const Color(
+                                    0xFF4CAF50,
+                                  ).withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.people,
+                                  size: 60,
+                                  color: Color(0xFF4CAF50),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              const Text(
+                                'No students assigned',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              const Text(
+                                'Add students to this class to mark attendance',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
                           ),
                         )
                       : ListView.builder(
+                          padding: const EdgeInsets.all(16),
                           itemCount: _students.length,
                           itemBuilder: (context, index) {
                             final student = _students[index];
                             final isPresent =
                                 _attendanceStatus[student.id] ?? true;
 
-                            return Card(
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 4,
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: isPresent
-                                      ? Colors.green
-                                      : Colors.red,
-                                  child: Text(
-                                    student.name.isNotEmpty
-                                        ? student.name[0].toUpperCase()
-                                        : '?',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                              child: Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
-                                title: Text(
-                                  student.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Contact: ${student.parentContact}'),
-                                    const SizedBox(height: 4),
-                                    TextField(
-                                      decoration: const InputDecoration(
-                                        hintText: 'Add remarks (optional)',
-                                        isDense: true,
-                                        border: OutlineInputBorder(),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            width: 50,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: isPresent
+                                                    ? [
+                                                        Colors.green,
+                                                        Colors.green.shade700,
+                                                      ]
+                                                    : [
+                                                        Colors.red,
+                                                        Colors.red.shade700,
+                                                      ],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              ),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                student.name.isNotEmpty
+                                                    ? student.name[0]
+                                                          .toUpperCase()
+                                                    : '?',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 18,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  student.name,
+                                                  style: const TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Row(
+                                                  children: [
+                                                    const Icon(
+                                                      Icons.phone,
+                                                      size: 16,
+                                                      color: Colors.grey,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      student.parentContact,
+                                                      style: const TextStyle(
+                                                        fontSize: 14,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              color: isPresent
+                                                  ? Colors.green.withOpacity(
+                                                      0.1,
+                                                    )
+                                                  : Colors.red.withOpacity(0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Switch(
+                                              value: isPresent,
+                                              activeColor: Colors.green,
+                                              inactiveTrackColor: Colors.red
+                                                  .withOpacity(0.3),
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _attendanceStatus[student
+                                                          .id] =
+                                                      value;
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      onChanged: (value) {
-                                        _remarks[student.id] = value;
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                trailing: Switch(
-                                  value: isPresent,
-                                  activeColor: Colors.green,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _attendanceStatus[student.id] = value;
-                                    });
-                                  },
+                                      const SizedBox(height: 12),
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[50],
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: TextField(
+                                          controller: TextEditingController(
+                                            text: _remarks[student.id] ?? '',
+                                          ),
+                                          decoration: InputDecoration(
+                                            hintText: 'Add remarks (optional)',
+                                            prefixIcon: const Icon(
+                                              Icons.note_add,
+                                              color: Color(0xFF4CAF50),
+                                            ),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide.none,
+                                            ),
+                                            filled: true,
+                                            fillColor: Colors.grey[50],
+                                          ),
+                                          onChanged: (value) {
+                                            _remarks[student.id] = value;
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             );
@@ -394,25 +623,39 @@ class _MarkAttendanceViewState extends State<MarkAttendanceView> {
                         ),
                 ),
 
-                // Submit button
+                // Save button
                 Container(
                   padding: const EdgeInsets.all(16),
                   child: SizedBox(
                     width: double.infinity,
-                    height: 48,
                     child: ElevatedButton(
-                      onPressed: _isSaving ? null : _markAttendance,
+                      onPressed: _isSaving ? null : _saveAttendance,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 73, 226, 31),
-                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFF4CAF50),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 4,
                       ),
                       child: _isSaving
-                          ? const CircularProgressIndicator(color: Colors.white)
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
                           : Text(
                               _attendanceAlreadyMarked
                                   ? 'Update Attendance'
-                                  : 'Mark Attendance',
-                              style: const TextStyle(fontSize: 16),
+                                  : 'Save Attendance',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                     ),
                   ),
