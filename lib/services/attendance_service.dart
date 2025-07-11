@@ -17,25 +17,6 @@ class AttendanceService {
     }
   }
 
-  // Mark attendance for multiple students at once
-  static Future<void> markBulkAttendance(
-    List<Attendance> attendanceList,
-  ) async {
-    try {
-      final batch = _firestore.batch();
-
-      for (final attendance in attendanceList) {
-        final docRef = _firestore.collection(_collection).doc();
-        final attendanceWithId = attendance.copyWith(id: docRef.id);
-        batch.set(docRef, attendanceWithId.toMap());
-      }
-
-      await batch.commit();
-    } catch (e) {
-      throw Exception('Failed to mark bulk attendance: $e');
-    }
-  }
-
   // Get attendance for a specific class on a specific date
   static Future<List<Attendance>> getClassAttendanceByDate(
     String classId,
@@ -262,39 +243,6 @@ class AttendanceService {
     }
   }
 
-  // Delete attendance record
-  static Future<void> deleteAttendance(String attendanceId) async {
-    try {
-      await _firestore.collection(_collection).doc(attendanceId).delete();
-    } catch (e) {
-      throw Exception('Failed to delete attendance: $e');
-    }
-  }
-
-  // Delete all attendance records for a class on a specific date
-  static Future<void> deleteClassAttendanceByDate(
-    String classId,
-    DateTime date,
-  ) async {
-    try {
-      final existingAttendance = await getClassAttendanceByDate(classId, date);
-
-      if (existingAttendance.isNotEmpty) {
-        final batch = _firestore.batch();
-
-        for (final attendance in existingAttendance) {
-          if (attendance.id.isNotEmpty) {
-            batch.delete(_firestore.collection(_collection).doc(attendance.id));
-          }
-        }
-
-        await batch.commit();
-      }
-    } catch (e) {
-      throw Exception('Failed to delete class attendance: $e');
-    }
-  }
-
   // Delete ALL attendance records for a class (used when deleting a class)
   static Future<void> deleteAllClassAttendance(String classId) async {
     try {
@@ -319,26 +267,6 @@ class AttendanceService {
   }
 
   // Mark attendance with duplicate prevention
-  static Future<void> markBulkAttendanceWithDuplicatePrevention(
-    List<Attendance> attendanceList,
-  ) async {
-    try {
-      if (attendanceList.isEmpty) return;
-
-      final classId = attendanceList.first.classId;
-      final date = attendanceList.first.date;
-
-      // First delete any existing attendance for this class and date
-      await deleteClassAttendanceByDate(classId, date);
-
-      // Then create the new attendance records
-      await markBulkAttendance(attendanceList);
-    } catch (e) {
-      throw Exception(
-        'Failed to mark attendance with duplicate prevention: $e',
-      );
-    }
-  }
 
   // Get attendance records for a class within a date range
   static Future<List<Attendance>> getClassAttendanceRange(

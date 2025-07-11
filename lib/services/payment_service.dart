@@ -151,30 +151,6 @@ class PaymentService {
   }
 
   // Get payments for a specific student
-  static Future<List<Payment>> getStudentPayments({
-    required String studentId,
-    int? year,
-  }) async {
-    try {
-      Query query = _firestore
-          .collection(_collection)
-          .where('studentId', isEqualTo: studentId);
-
-      if (year != null) {
-        query = query.where('year', isEqualTo: year);
-      }
-
-      final querySnapshot = await query
-          .orderBy('createdAt', descending: true)
-          .get();
-
-      return querySnapshot.docs
-          .map((doc) => Payment.fromMap(doc.data() as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      throw Exception('Failed to get student payments: $e');
-    }
-  }
 
   // Get payment statistics for a class
   static Future<Map<String, dynamic>> getClassPaymentStats({
@@ -297,20 +273,4 @@ class PaymentService {
   }
 
   // Get class payments stream
-  static Stream<List<Payment>> getClassPaymentsStream({
-    required String classId,
-    required String month,
-    required int year,
-  }) {
-    return _firestore
-        .collection(_collection)
-        .where('classId', isEqualTo: classId)
-        .where('month', isEqualTo: month)
-        .where('year', isEqualTo: year)
-        .snapshots()
-        .map(
-          (snapshot) =>
-              snapshot.docs.map((doc) => Payment.fromMap(doc.data())).toList(),
-        );
-  }
 }

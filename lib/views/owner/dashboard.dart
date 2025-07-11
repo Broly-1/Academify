@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:tuition_app/services/auth/auth_service.dart';
 import 'package:tuition_app/enums/menu_action.dart';

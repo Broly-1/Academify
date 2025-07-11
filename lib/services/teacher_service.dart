@@ -6,25 +6,6 @@ class TeacherService {
   static const String _collection = 'teachers';
 
   // Create a new teacher with Firebase Auth account
-  static Future<String> createTeacherWithAccount({
-    required String name,
-    required String email,
-    required String password,
-  }) async {
-    try {
-      // First create the teacher profile
-      final teacher = Teacher(id: '', name: name, email: email);
-
-      final teacherId = await createTeacher(teacher);
-
-      // Note: We'll handle Firebase Auth account creation in the UI
-      // to avoid session conflicts
-
-      return teacherId;
-    } catch (e) {
-      throw Exception('Failed to create teacher with account: $e');
-    }
-  }
 
   // Create a new teacher profile with specific UID (for Firebase Auth integration)
 
@@ -121,20 +102,5 @@ class TeacherService {
     } catch (e) {
       throw Exception('Failed to create or update teacher profile: $e');
     }
-  }
-
-  // Search teachers by name
-  static Stream<List<Teacher>> searchTeachers(String searchTerm) {
-    return _firestore
-        .collection(_collection)
-        .orderBy('name')
-        .startAt([searchTerm])
-        .endAt([searchTerm + '\uf8ff'])
-        .snapshots()
-        .map((snapshot) {
-          return snapshot.docs
-              .map((doc) => Teacher.fromMap(doc.data()))
-              .toList();
-        });
   }
 }

@@ -30,17 +30,6 @@ class ClassService {
   }
 
   // Get a specific class by ID
-  static Future<ClassModel?> getClass(String classId) async {
-    try {
-      final doc = await _firestore.collection(_collection).doc(classId).get();
-      if (doc.exists) {
-        return ClassModel.fromMap(doc.data()!);
-      }
-      return null;
-    } catch (e) {
-      throw Exception('Failed to get class: $e');
-    }
-  }
 
   // Update a class
   static Future<void> updateClass(ClassModel classModel) async {
@@ -68,40 +57,8 @@ class ClassService {
   }
 
   // Get classes assigned to a specific teacher
-  static Stream<List<ClassModel>> getClassesByTeacher(String teacherId) {
-    return _firestore
-        .collection(_collection)
-        .where('teacherId', isEqualTo: teacherId)
-        .orderBy('grade')
-        .snapshots()
-        .map((snapshot) {
-          return snapshot.docs
-              .map((doc) => ClassModel.fromMap(doc.data()))
-              .toList();
-        });
-  }
 
   // Assign teacher to class
-  static Future<void> assignTeacher(String classId, String teacherId) async {
-    try {
-      await _firestore.collection(_collection).doc(classId).update({
-        'teacherId': teacherId,
-      });
-    } catch (e) {
-      throw Exception('Failed to assign teacher: $e');
-    }
-  }
-
-  // Remove teacher from class
-  static Future<void> removeTeacher(String classId) async {
-    try {
-      await _firestore.collection(_collection).doc(classId).update({
-        'teacherId': null,
-      });
-    } catch (e) {
-      throw Exception('Failed to remove teacher: $e');
-    }
-  }
 
   // Add student to class
   static Future<void> addStudentToClass(

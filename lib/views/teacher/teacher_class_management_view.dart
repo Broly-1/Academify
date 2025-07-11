@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:tuition_app/models/class_model.dart';
 import 'package:tuition_app/models/teacher.dart';

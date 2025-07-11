@@ -27,17 +27,6 @@ class StudentService {
   }
 
   // Get a specific student by ID
-  static Future<Student?> getStudent(String studentId) async {
-    try {
-      final doc = await _firestore.collection(_collection).doc(studentId).get();
-      if (doc.exists) {
-        return Student.fromMap(doc.data()!);
-      }
-      return null;
-    } catch (e) {
-      throw Exception('Failed to get student: $e');
-    }
-  }
 
   // Get multiple students by IDs
   static Future<List<Student>> getStudentsByIds(List<String> studentIds) async {
@@ -84,20 +73,5 @@ class StudentService {
     } catch (e) {
       throw Exception('Failed to delete student: $e');
     }
-  }
-
-  // Search students by name
-  static Stream<List<Student>> searchStudents(String searchTerm) {
-    return _firestore
-        .collection(_collection)
-        .orderBy('name')
-        .startAt([searchTerm])
-        .endAt([searchTerm + '\uf8ff'])
-        .snapshots()
-        .map((snapshot) {
-          return snapshot.docs
-              .map((doc) => Student.fromMap(doc.data()))
-              .toList();
-        });
   }
 }

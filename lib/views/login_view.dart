@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:tuition_app/firebase_options.dart';
@@ -168,10 +170,6 @@ class _LoginViewState extends State<LoginView> {
                       const SizedBox(height: 32),
 
                       // Footer
-                      Text(
-                        'Made by Broly',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                      ),
                     ],
                   ),
                 ),

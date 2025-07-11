@@ -178,7 +178,7 @@ class _CreateClassViewState extends State<CreateClassView> {
                                   value: teacher,
                                   child: Text(teacher.name),
                                 );
-                              }).toList(),
+                              }),
                             ],
                             onChanged: (teacher) {
                               setState(() {

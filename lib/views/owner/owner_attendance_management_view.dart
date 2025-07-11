@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_final_fields, deprecated_member_use, sized_box_for_whitespace
+
 import 'package:flutter/material.dart';
 import 'package:tuition_app/models/class_model.dart';
 import 'package:tuition_app/models/student.dart';

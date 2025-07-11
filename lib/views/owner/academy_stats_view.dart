@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:tuition_app/models/student.dart';
 import 'package:tuition_app/models/teacher.dart';
@@ -1172,7 +1174,7 @@ class _AcademyStatsViewState extends State<AcademyStatsView>
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -1250,7 +1252,7 @@ class _AcademyStatsViewState extends State<AcademyStatsView>
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -1338,7 +1340,7 @@ class _AcademyStatsViewState extends State<AcademyStatsView>
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        child: Container(
+        child: SizedBox(
           width: MediaQuery.of(context).size.width * 0.9,
           height: MediaQuery.of(context).size.height * 0.8,
           child: Column(
