@@ -6,7 +6,6 @@ import 'package:tuition_app/services/student_service.dart';
 import 'package:tuition_app/services/attendance_service.dart';
 import 'package:tuition_app/services/auth/auth_service.dart';
 import 'package:tuition_app/utils/ui_utils.dart';
-import 'package:tuition_app/utils/service_utils.dart';
 
 class MarkAttendanceView extends StatefulWidget {
   final ClassModel classModel;

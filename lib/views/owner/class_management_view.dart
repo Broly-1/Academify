@@ -7,9 +7,107 @@ import 'package:tuition_app/views/owner/create_class_view.dart';
 import 'package:tuition_app/views/owner/edit_class_view.dart';
 import 'package:tuition_app/views/owner/assign_students_view.dart';
 import 'package:tuition_app/views/owner/assign_teacher_view.dart';
+import 'package:tuition_app/services/pdf_service.dart';
+import 'package:tuition_app/services/attendance_service.dart';
+import 'package:tuition_app/services/student_service.dart';
 
 class ClassManagementView extends StatelessWidget {
   const ClassManagementView({super.key});
+
+  static Future<void> _generateClassReport(BuildContext context) async {
+    try {
+      // Get all classes
+      final classes = await ClassService.getAllClasses().first;
+
+      if (classes.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No classes available to generate report'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      // Show class selection dialog
+      ClassModel? selectedClass = await showDialog<ClassModel>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Select Class for Report'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: classes.length,
+              itemBuilder: (context, index) {
+                final classModel = classes[index];
+                return ListTile(
+                  title: Text('${classModel.grade} ${classModel.section}'),
+                  subtitle: Text(
+                    'Year: ${classModel.year} - Fee: \$${classModel.monthlyFee}',
+                  ),
+                  onTap: () => Navigator.of(context).pop(classModel),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+          ],
+        ),
+      );
+
+      if (selectedClass == null) return;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      // Get students for selected class
+      final students = await StudentService.getStudentsByIds(
+        selectedClass.studentIds,
+      );
+
+      // Get attendance records for the last 30 days
+      final endDate = DateTime.now();
+      final startDate = endDate.subtract(const Duration(days: 30));
+      final attendanceRecords = await AttendanceService.getClassAttendanceRange(
+        selectedClass.id,
+        startDate: startDate,
+        endDate: endDate,
+      );
+
+      await PDFService.generateAttendanceReportPDF(
+        classModel: selectedClass,
+        students: students,
+        attendanceRecords: attendanceRecords,
+        startDate: startDate,
+        endDate: endDate,
+      );
+
+      Navigator.of(context).pop(); // Close loading dialog
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Class report generated successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      Navigator.of(context).pop(); // Close loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error generating report: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +122,13 @@ class ClassManagementView extends StatelessWidget {
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () => _generateClassReport(context),
+            icon: const Icon(Icons.picture_as_pdf),
+            tooltip: 'Generate Class Report',
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {

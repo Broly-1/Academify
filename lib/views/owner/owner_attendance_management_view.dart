@@ -7,6 +7,7 @@ import 'package:tuition_app/services/attendance_service.dart';
 import 'package:tuition_app/views/owner/individual_student_attendance_view.dart';
 import 'package:tuition_app/utils/ui_utils.dart';
 import 'package:tuition_app/utils/service_utils.dart';
+import 'package:tuition_app/services/pdf_service.dart';
 
 class OwnerAttendanceManagementView extends StatefulWidget {
   const OwnerAttendanceManagementView({super.key});
@@ -116,6 +117,147 @@ class _OwnerAttendanceManagementViewState
         ),
       ),
     );
+  }
+
+  Future<void> _generateAttendanceReport() async {
+    if (_classes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No classes available to generate report'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Show class selection dialog
+    ClassModel? selectedClass = await showDialog<ClassModel>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Class for Report'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: _classes.length,
+            itemBuilder: (context, index) {
+              final classModel = _classes[index];
+              return ListTile(
+                title: Text('${classModel.grade} ${classModel.section}'),
+                subtitle: Text(
+                  'Year: ${classModel.year} - Teacher: ${classModel.teacherId ?? 'Not assigned'}',
+                ),
+                onTap: () => Navigator.of(context).pop(classModel),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (selectedClass == null) return;
+
+    // Show report type selection dialog
+    String? reportType = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Report Type'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Choose the type of attendance report to generate:'),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.school, color: Colors.blue),
+              title: const Text('Student Copy'),
+              subtitle: const Text('Basic attendance information for students'),
+              onTap: () => Navigator.of(context).pop('student'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person, color: Colors.green),
+              title: const Text('Teacher Copy'),
+              subtitle: const Text(
+                'Detailed report with summary and analytics',
+              ),
+              onTap: () => Navigator.of(context).pop('teacher'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (reportType == null) return;
+
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      // Get students for selected class
+      final students = _classStudents[selectedClass.id] ?? [];
+
+      // Get attendance records for the date range
+      final attendanceRecords = await AttendanceService.getClassAttendanceRange(
+        selectedClass.id,
+        startDate: _startDate,
+        endDate: _endDate,
+      );
+
+      // Generate appropriate report type
+      if (reportType == 'student') {
+        await PDFService.previewAttendanceReportForStudent(
+          selectedClass,
+          students,
+          attendanceRecords,
+          _startDate,
+          _endDate,
+        );
+      } else {
+        await PDFService.previewAttendanceReportForTeacher(
+          selectedClass,
+          students,
+          attendanceRecords,
+          _startDate,
+          _endDate,
+        );
+      }
+
+      Navigator.of(context).pop(); // Close loading dialog
+
+      final copyType = reportType == 'student'
+          ? 'Student Copy'
+          : 'Teacher Copy';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Professional attendance report ($copyType) generated successfully!',
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      Navigator.of(context).pop(); // Close loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error generating report: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -676,6 +818,15 @@ class _OwnerAttendanceManagementViewState
                 ),
               ],
             ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _generateAttendanceReport,
+        backgroundColor: UIUtils.primaryGreen,
+        icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
+        label: const Text(
+          'Generate PDF',
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
     );
   }
 }

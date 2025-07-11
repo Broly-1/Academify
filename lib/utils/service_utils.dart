@@ -399,7 +399,7 @@ class ServiceUtils {
         } else {
           showLoadingOverlay(
             context: context,
-            message: '$loadingMessage (Retry ${attempts}/$maxRetries)',
+            message: '$loadingMessage (Retry $attempts/$maxRetries)',
           );
         }
 

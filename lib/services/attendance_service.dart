@@ -339,4 +339,51 @@ class AttendanceService {
       );
     }
   }
+
+  // Get attendance records for a class within a date range
+  static Future<List<Attendance>> getClassAttendanceRange(
+    String classId, {
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection(_collection)
+          .where('classId', isEqualTo: classId)
+          .get();
+
+      final attendanceRecords = querySnapshot.docs
+          .map((doc) => Attendance.fromMap(doc.data()))
+          .where((record) {
+            final recordDate = DateTime(
+              record.date.year,
+              record.date.month,
+              record.date.day,
+            );
+            final normalizedStartDate = DateTime(
+              startDate.year,
+              startDate.month,
+              startDate.day,
+            );
+            final normalizedEndDate = DateTime(
+              endDate.year,
+              endDate.month,
+              endDate.day,
+            );
+
+            return recordDate.isAtSameMomentAs(normalizedStartDate) ||
+                recordDate.isAtSameMomentAs(normalizedEndDate) ||
+                (recordDate.isAfter(normalizedStartDate) &&
+                    recordDate.isBefore(normalizedEndDate));
+          })
+          .toList();
+
+      // Sort by date
+      attendanceRecords.sort((a, b) => a.date.compareTo(b.date));
+
+      return attendanceRecords;
+    } catch (e) {
+      throw Exception('Failed to get class attendance range: $e');
+    }
+  }
 }

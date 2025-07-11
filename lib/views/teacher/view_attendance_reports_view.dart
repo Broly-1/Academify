@@ -3,6 +3,7 @@ import 'package:tuition_app/models/class_model.dart';
 import 'package:tuition_app/models/student.dart';
 import 'package:tuition_app/services/student_service.dart';
 import 'package:tuition_app/services/attendance_service.dart';
+import 'package:tuition_app/services/pdf_service.dart';
 import 'package:tuition_app/utils/ui_utils.dart';
 import 'package:tuition_app/utils/service_utils.dart';
 
@@ -103,6 +104,111 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
     if (percentage >= 90) return Colors.green;
     if (percentage >= 75) return Colors.orange;
     return Colors.red;
+  }
+
+  Future<void> _generateAttendanceReport() async {
+    if (_students.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No student data available to generate report'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Show report type selection dialog
+    String? reportType = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Report Type'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Choose the type of attendance report to generate:'),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.school, color: Colors.blue),
+              title: const Text('Student Copy'),
+              subtitle: const Text('Basic attendance information for students'),
+              onTap: () => Navigator.of(context).pop('student'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person, color: Colors.green),
+              title: const Text('Teacher Copy'),
+              subtitle: const Text(
+                'Detailed report with summary and analytics',
+              ),
+              onTap: () => Navigator.of(context).pop('teacher'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (reportType == null) return;
+
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      // Get attendance records for the date range
+      final attendanceRecords = await AttendanceService.getClassAttendanceRange(
+        widget.classModel.id,
+        startDate: _startDate,
+        endDate: _endDate,
+      );
+
+      // Generate appropriate report type
+      if (reportType == 'student') {
+        await PDFService.previewAttendanceReportForStudent(
+          widget.classModel,
+          _students,
+          attendanceRecords,
+          _startDate,
+          _endDate,
+        );
+      } else {
+        await PDFService.previewAttendanceReportForTeacher(
+          widget.classModel,
+          _students,
+          attendanceRecords,
+          _startDate,
+          _endDate,
+        );
+      }
+
+      Navigator.of(context).pop(); // Close loading dialog
+
+      final copyType = reportType == 'student'
+          ? 'Student Copy'
+          : 'Teacher Copy';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Professional attendance report ($copyType) generated successfully!',
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      Navigator.of(context).pop(); // Close loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error generating report: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -313,6 +419,13 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
                 ),
               ],
             ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _generateAttendanceReport,
+        backgroundColor: UIUtils.primaryGreen,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.picture_as_pdf),
+        label: const Text('Generate PDF'),
+      ),
     );
   }
 }

@@ -189,7 +189,7 @@ class _EditClassViewState extends State<EditClassView> {
                               value: teacher,
                               child: Text(teacher.name),
                             );
-                          }).toList(),
+                          }),
                         ],
                         onChanged: (teacher) {
                           setState(() {

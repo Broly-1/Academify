@@ -3,6 +3,7 @@ import 'package:tuition_app/models/class_model.dart';
 import 'package:tuition_app/models/student.dart';
 import 'package:tuition_app/models/attendance.dart';
 import 'package:tuition_app/services/attendance_service.dart';
+import 'package:tuition_app/services/pdf_service.dart';
 
 class IndividualStudentAttendanceView extends StatefulWidget {
   final Student student;
@@ -104,6 +105,41 @@ class _IndividualStudentAttendanceViewState
     return Colors.red;
   }
 
+  Future<void> _generateStudentReport() async {
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      await PDFService.generateAttendanceReportPDF(
+        classModel: widget.classModel,
+        students: [widget.student], // Only this student
+        attendanceRecords: _attendanceRecords,
+        startDate: _startDate,
+        endDate: _endDate,
+      );
+
+      Navigator.of(context).pop(); // Close loading dialog
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Student attendance report generated successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      Navigator.of(context).pop(); // Close loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error generating report: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final presentDays = _stats['presentDays'] ?? 0;
@@ -137,6 +173,11 @@ class _IndividualStudentAttendanceViewState
             onPressed: _selectDateRange,
             icon: const Icon(Icons.date_range, color: Colors.white),
             tooltip: 'Select Date Range',
+          ),
+          IconButton(
+            onPressed: _generateStudentReport,
+            icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
+            tooltip: 'Generate PDF Report',
           ),
         ],
       ),

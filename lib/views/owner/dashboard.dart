@@ -5,6 +5,7 @@ import 'package:tuition_app/views/owner/class_management_view.dart';
 import 'package:tuition_app/views/owner/student_management_view.dart';
 import 'package:tuition_app/views/owner/teacher_management_view.dart';
 import 'package:tuition_app/views/owner/owner_attendance_management_view.dart';
+import 'package:tuition_app/views/owner/payment_management_view.dart';
 
 class OwnerView extends StatefulWidget {
   const OwnerView({super.key});
@@ -279,6 +280,35 @@ class _OwnerViewState extends State<OwnerView> {
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Third row - Payment Management
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: _buildModernDashboardCard(
+                            context,
+                            title: 'Payments',
+                            subtitle: 'Fee management',
+                            icon: Icons.payment,
+                            color: const Color(0xFF4CAF50),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const PaymentManagementView(),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Container(),
+                        ), // Empty space for symmetry
                       ],
                     ),
                   ),

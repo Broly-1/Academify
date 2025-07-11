@@ -8,7 +8,6 @@ import 'package:tuition_app/models/class_model.dart';
 import 'package:tuition_app/enums/menu_action.dart';
 import 'package:tuition_app/views/teacher/teacher_class_management_view.dart';
 import 'package:tuition_app/utils/ui_utils.dart';
-import 'package:tuition_app/utils/service_utils.dart';
 
 class TeacherView extends StatefulWidget {
   const TeacherView({super.key});
