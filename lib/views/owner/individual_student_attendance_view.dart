@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:tuition_app/models/class_model.dart';
 import 'package:tuition_app/models/student.dart';
 import 'package:tuition_app/models/attendance.dart';
+import 'package:tuition_app/models/teacher.dart';
 import 'package:tuition_app/services/attendance_service.dart';
+import 'package:tuition_app/services/teacher_service.dart';
 import 'package:tuition_app/services/pdf_service.dart';
 
 class IndividualStudentAttendanceView extends StatefulWidget {
@@ -113,12 +115,26 @@ class _IndividualStudentAttendanceViewState
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
+      // Get teacher information if assigned to class
+      Teacher? teacher;
+      if (widget.classModel.teacherId != null) {
+        try {
+          teacher = await TeacherService.getTeacher(
+            widget.classModel.teacherId!,
+          );
+        } catch (e) {
+          // If teacher fetch fails, continue without teacher info
+          teacher = null;
+        }
+      }
+
       await PDFService.generateAttendanceReportPDF(
         classModel: widget.classModel,
         students: [widget.student], // Only this student
         attendanceRecords: _attendanceRecords,
         startDate: _startDate,
         endDate: _endDate,
+        teacher: teacher,
       );
 
       Navigator.of(context).pop(); // Close loading dialog

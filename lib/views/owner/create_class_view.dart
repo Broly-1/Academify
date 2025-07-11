@@ -47,7 +47,7 @@ class _CreateClassViewState extends State<CreateClassView> {
       ),
       body: Form(
         key: _formKey,
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [

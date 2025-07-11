@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:tuition_app/models/class_model.dart';
 import 'package:tuition_app/models/student.dart';
+import 'package:tuition_app/models/teacher.dart';
 import 'package:tuition_app/services/student_service.dart';
 import 'package:tuition_app/services/attendance_service.dart';
+import 'package:tuition_app/services/teacher_service.dart';
 import 'package:tuition_app/services/pdf_service.dart';
 import 'package:tuition_app/utils/ui_utils.dart';
 import 'package:tuition_app/utils/service_utils.dart';
@@ -168,6 +170,19 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
         endDate: _endDate,
       );
 
+      // Get teacher information if assigned to class
+      Teacher? teacher;
+      if (widget.classModel.teacherId != null) {
+        try {
+          teacher = await TeacherService.getTeacher(
+            widget.classModel.teacherId!,
+          );
+        } catch (e) {
+          // If teacher fetch fails, continue without teacher info
+          teacher = null;
+        }
+      }
+
       // Generate appropriate report type
       if (reportType == 'student') {
         await PDFService.previewAttendanceReportForStudent(
@@ -176,6 +191,7 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
           attendanceRecords,
           _startDate,
           _endDate,
+          teacher: teacher,
         );
       } else {
         await PDFService.previewAttendanceReportForTeacher(
@@ -184,6 +200,7 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
           attendanceRecords,
           _startDate,
           _endDate,
+          teacher: teacher,
         );
       }
 

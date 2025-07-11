@@ -129,58 +129,205 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
     }
   }
 
-  Future<void> _createPaymentsForClass() async {
+  Future<void> _createPaymentsAndChallans() async {
     if (_selectedClass == null || _students.isEmpty) return;
 
-    // Show dialog to get fee amount
-    final feeAmount = await _showFeeAmountDialog();
-    if (feeAmount == null) return;
+    // Show dialog to get extra dues and due date
+    final paymentDetails = await _showPaymentCreationDialog();
+    if (paymentDetails == null) return;
 
     setState(() => _isLoading = true);
     try {
+      final totalAmount =
+          _selectedClass!.monthlyFee + (paymentDetails['extraDues'] ?? 0.0);
+
+      // Create payment records
       await PaymentService.createClassPayments(
         classId: _selectedClass!.id,
         students: _students,
-        amount: feeAmount,
+        amount: totalAmount,
         month: _selectedMonth,
         year: _selectedYear,
       );
 
-      _showSuccessSnackBar('Payment records created for all students');
+      // Generate fee challans
+      await PDFService.generateBatchFeeChallans(
+        classModel: _selectedClass!,
+        students: _students,
+        month: _selectedMonth,
+        year: _selectedYear,
+        feeAmount: totalAmount,
+        dueDate: paymentDetails['dueDate'],
+        extraDues: paymentDetails['extraDues'] ?? 0.0,
+      );
+
+      _showSuccessSnackBar(
+        'Payment records created and fee challans generated successfully',
+      );
       _loadClassData();
     } catch (e) {
-      _showErrorSnackBar('Failed to create payments: $e');
+      _showErrorSnackBar('Failed to create payments and challans: $e');
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
-  Future<double?> _showFeeAmountDialog() async {
-    double? amount;
-    return showDialog<double>(
+  Future<Map<String, dynamic>?> _showPaymentCreationDialog() async {
+    double extraDues = 0.0;
+    DateTime? dueDate;
+
+    return showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Set Fee Amount'),
-        content: TextField(
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'Fee Amount (₹)',
-            prefixText: '₹ ',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Create Payments & Fee Challans'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Display class fee (non-editable)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.school, color: Colors.blue.shade700),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Class Monthly Fee',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            '₹${_selectedClass!.monthlyFee}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Extra dues input
+              TextField(
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Extra Dues (₹)',
+                  prefixText: '₹ ',
+                  hintText: '0.00',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  setDialogState(() {
+                    extraDues = double.tryParse(value) ?? 0.0;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // Total amount display
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.calculate, color: Colors.green.shade700),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Total Amount',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.green.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            '₹${(_selectedClass!.monthlyFee + extraDues).toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Due date selection
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      dueDate == null
+                          ? 'Due Date: Not selected'
+                          : 'Due Date: ${dueDate!.day}/${dueDate!.month}/${dueDate!.year}',
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now().add(
+                          const Duration(days: 15),
+                        ),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
+                      if (picked != null) {
+                        setDialogState(() => dueDate = picked);
+                      }
+                    },
+                    child: const Text('Select Date'),
+                  ),
+                ],
+              ),
+            ],
           ),
-          onChanged: (value) {
-            amount = double.tryParse(value);
-          },
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                final dueDateStr = dueDate != null
+                    ? '${dueDate!.day}/${dueDate!.month}/${dueDate!.year}'
+                    : null;
+                Navigator.pop(context, {
+                  'extraDues': extraDues,
+                  'dueDate': dueDateStr,
+                });
+              },
+              child: const Text('Create & Generate'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, amount),
-            child: const Text('Create'),
-          ),
-        ],
       ),
     );
   }
@@ -213,14 +360,10 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
 
     setState(() => _isLoading = true);
     try {
-      // Get fee amount from first payment or ask user
-      double feeAmount = 0;
+      // Use fee amount from first payment or class monthly fee
+      double feeAmount = _selectedClass!.monthlyFee;
       if (_payments.isNotEmpty) {
         feeAmount = _payments.first.amount;
-      } else {
-        final amount = await _showFeeAmountDialog();
-        if (amount == null) return;
-        feeAmount = amount;
       }
 
       await PDFService.generatePaymentReceiptsPDF(
@@ -237,109 +380,6 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
     } finally {
       setState(() => _isLoading = false);
     }
-  }
-
-  Future<void> _generateBatchFeeChallans() async {
-    if (_selectedClass == null || _students.isEmpty) return;
-
-    // Show dialog to get fee amount and due date
-    final challanDetails = await _showFeeChallanDialog();
-    if (challanDetails == null) return;
-
-    setState(() => _isLoading = true);
-    try {
-      await PDFService.generateBatchFeeChallans(
-        classModel: _selectedClass!,
-        students: _students,
-        month: _selectedMonth,
-        year: _selectedYear,
-        feeAmount: challanDetails['amount'],
-        dueDate: challanDetails['dueDate'],
-      );
-
-      _showSuccessSnackBar('Fee challans generated successfully');
-    } catch (e) {
-      _showErrorSnackBar('Failed to generate fee challans: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<Map<String, dynamic>?> _showFeeChallanDialog() async {
-    double? amount;
-    DateTime? dueDate;
-
-    return showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Fee Challan Details'),
-        content: StatefulBuilder(
-          builder: (context, setState) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Fee Amount (₹)',
-                  prefixText: '₹ ',
-                ),
-                onChanged: (value) {
-                  amount = double.tryParse(value);
-                },
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      dueDate == null
-                          ? 'Due Date: Not selected'
-                          : 'Due Date: ${dueDate!.day}/${dueDate!.month}/${dueDate!.year}',
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now().add(
-                          const Duration(days: 15),
-                        ),
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                      );
-                      if (picked != null) {
-                        setState(() => dueDate = picked);
-                      }
-                    },
-                    child: const Text('Select Date'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (amount != null) {
-                final dueDateStr = dueDate != null
-                    ? '${dueDate!.day}/${dueDate!.month}/${dueDate!.year}'
-                    : null;
-                Navigator.pop(context, {
-                  'amount': amount,
-                  'dueDate': dueDateStr,
-                });
-              }
-            },
-            child: const Text('Generate'),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showErrorSnackBar(String message) {
@@ -585,50 +625,28 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
             LayoutBuilder(
               builder: (context, constraints) {
                 if (constraints.maxWidth > 600) {
-                  return Column(
+                  return Row(
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _createPaymentsForClass,
-                              icon: const Icon(Icons.add, size: 20),
-                              label: const Text('Create Payments'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _generatePaymentReceipts,
-                              icon: const Icon(Icons.print, size: 20),
-                              label: const Text('Generate Receipts'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
+                      Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: _generateBatchFeeChallans,
-                          icon: const Icon(Icons.description, size: 20),
-                          label: const Text('Generate Fee Challans'),
+                          onPressed: _createPaymentsAndChallans,
+                          icon: const Icon(Icons.add_box, size: 20),
+                          label: const Text('Create Payments & Challans'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _generatePaymentReceipts,
+                          icon: const Icon(Icons.print, size: 20),
+                          label: const Text('Generate Receipts'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
@@ -642,9 +660,9 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          onPressed: _createPaymentsForClass,
-                          icon: const Icon(Icons.add, size: 20),
-                          label: const Text('Create Payments for Class'),
+                          onPressed: _createPaymentsAndChallans,
+                          icon: const Icon(Icons.add_box, size: 20),
+                          label: const Text('Create Payments & Challans'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
                             foregroundColor: Colors.white,
@@ -661,20 +679,6 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
                           label: const Text('Generate Payment Receipts'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: _generateBatchFeeChallans,
-                          icon: const Icon(Icons.description, size: 20),
-                          label: const Text('Generate Fee Challans'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),

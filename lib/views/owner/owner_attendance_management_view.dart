@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:tuition_app/models/class_model.dart';
 import 'package:tuition_app/models/student.dart';
+import 'package:tuition_app/models/teacher.dart';
 import 'package:tuition_app/services/class_service.dart';
 import 'package:tuition_app/services/student_service.dart';
 import 'package:tuition_app/services/attendance_service.dart';
+import 'package:tuition_app/services/teacher_service.dart';
 import 'package:tuition_app/views/owner/individual_student_attendance_view.dart';
 import 'package:tuition_app/utils/ui_utils.dart';
 import 'package:tuition_app/utils/service_utils.dart';
@@ -144,8 +146,16 @@ class _OwnerAttendanceManagementViewState
               final classModel = _classes[index];
               return ListTile(
                 title: Text('${classModel.grade} ${classModel.section}'),
-                subtitle: Text(
-                  'Year: ${classModel.year} - Teacher: ${classModel.teacherId ?? 'Not assigned'}',
+                subtitle: FutureBuilder<Teacher?>(
+                  future: classModel.teacherId != null
+                      ? TeacherService.getTeacher(classModel.teacherId!)
+                      : Future.value(null),
+                  builder: (context, snapshot) {
+                    final teacherName = snapshot.data?.name ?? 'Not assigned';
+                    return Text(
+                      'Year: ${classModel.year} - Teacher: $teacherName',
+                    );
+                  },
                 ),
                 onTap: () => Navigator.of(context).pop(classModel),
               );
@@ -210,6 +220,17 @@ class _OwnerAttendanceManagementViewState
       // Get students for selected class
       final students = _classStudents[selectedClass.id] ?? [];
 
+      // Get teacher information if assigned to class
+      Teacher? teacher;
+      if (selectedClass.teacherId != null) {
+        try {
+          teacher = await TeacherService.getTeacher(selectedClass.teacherId!);
+        } catch (e) {
+          // If teacher fetch fails, continue without teacher info
+          teacher = null;
+        }
+      }
+
       // Get attendance records for the date range
       final attendanceRecords = await AttendanceService.getClassAttendanceRange(
         selectedClass.id,
@@ -225,6 +246,7 @@ class _OwnerAttendanceManagementViewState
           attendanceRecords,
           _startDate,
           _endDate,
+          teacher: teacher,
         );
       } else {
         await PDFService.previewAttendanceReportForTeacher(
@@ -233,6 +255,7 @@ class _OwnerAttendanceManagementViewState
           attendanceRecords,
           _startDate,
           _endDate,
+          teacher: teacher,
         );
       }
 
