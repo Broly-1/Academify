@@ -3,6 +3,8 @@ import 'package:tuition_app/models/class_model.dart';
 import 'package:tuition_app/models/student.dart';
 import 'package:tuition_app/services/student_service.dart';
 import 'package:tuition_app/services/attendance_service.dart';
+import 'package:tuition_app/utils/ui_utils.dart';
+import 'package:tuition_app/utils/service_utils.dart';
 
 class ViewAttendanceReportsView extends StatefulWidget {
   final ClassModel classModel;
@@ -71,11 +73,10 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
         setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error loading reports: $e'),
-            backgroundColor: Colors.red,
-          ),
+        ServiceUtils.handleServiceError(
+          error: e,
+          context: context,
+          customMessage: 'Error loading reports: $e',
         );
       }
     }
@@ -108,26 +109,9 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        title: Text(
-          'Attendance Reports - ${widget.classModel.grade} ${widget.classModel.section}',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: Colors.white),
+      appBar: UIUtils.createGradientAppBar(
+        title:
+            'Attendance Reports - ${widget.classModel.grade} ${widget.classModel.section}',
         actions: [
           IconButton(
             onPressed: _selectDateRange,
@@ -138,30 +122,8 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
       ),
       body: _isLoading
           ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50).withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const CircularProgressIndicator(
-                      color: Color(0xFF4CAF50),
-                      strokeWidth: 3,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Loading attendance reports...',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+              child: UIUtils.createLoadingIndicator(
+                message: 'Loading attendance reports...',
               ),
             )
           : Column(
@@ -188,12 +150,7 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
                             icon: const Icon(Icons.date_range),
                             label: const Text('Change'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(
-                                255,
-                                73,
-                                226,
-                                31,
-                              ),
+                              backgroundColor: UIUtils.primaryGreen,
                               foregroundColor: Colors.white,
                             ),
                           ),
@@ -207,7 +164,7 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: UIUtils.mediumRadius,
                             border: Border.all(color: Colors.grey[300]!),
                           ),
                           child: Column(
@@ -218,10 +175,10 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: Color.fromARGB(255, 73, 226, 31),
+                                  color: UIUtils.primaryGreen,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              UIUtils.smallVerticalSpacing,
                               Text(
                                 'Total Days with Attendance: ${(_classStats['dailyStats'] as List).length}',
                                 style: const TextStyle(fontSize: 14),
@@ -258,7 +215,7 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
                             final percentage =
                                 stats['attendancePercentage'] ?? 0.0;
 
-                            return Card(
+                            return UIUtils.createCardContainer(
                               margin: const EdgeInsets.only(bottom: 12),
                               child: ListTile(
                                 leading: CircleAvatar(
@@ -295,9 +252,7 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
                                           ),
                                           decoration: BoxDecoration(
                                             color: Colors.green[100],
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
+                                            borderRadius: UIUtils.smallRadius,
                                           ),
                                           child: Text(
                                             'Present: $presentDays',
@@ -308,7 +263,7 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(width: 8),
+                                        UIUtils.smallHorizontalSpacing,
                                         Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 8,
@@ -316,9 +271,7 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
                                           ),
                                           decoration: BoxDecoration(
                                             color: Colors.red[100],
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
+                                            borderRadius: UIUtils.smallRadius,
                                           ),
                                           child: Text(
                                             'Absent: $absentDays',

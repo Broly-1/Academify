@@ -7,6 +7,8 @@ import 'package:tuition_app/models/teacher.dart';
 import 'package:tuition_app/models/class_model.dart';
 import 'package:tuition_app/enums/menu_action.dart';
 import 'package:tuition_app/views/teacher/teacher_class_management_view.dart';
+import 'package:tuition_app/utils/ui_utils.dart';
+import 'package:tuition_app/utils/service_utils.dart';
 
 class TeacherView extends StatefulWidget {
   const TeacherView({super.key});
@@ -114,36 +116,14 @@ class _TeacherViewState extends State<TeacherView> {
           child: CustomScrollView(
             slivers: [
               // Modern App Bar with consistent green theme
-              SliverAppBar(
-                expandedHeight: 120,
-                backgroundColor: const Color(0xFF4CAF50),
-                foregroundColor: Colors.white,
-                pinned: true,
-                elevation: 0,
-                flexibleSpace: FlexibleSpaceBar(
-                  title: const Text(
-                    'Teacher Dashboard',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  background: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                  ),
-                ),
+              UIUtils.createSliverAppBar(
+                title: 'Teacher Dashboard',
                 actions: [
                   Container(
                     margin: const EdgeInsets.only(right: 8),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: UIUtils.mediumRadius,
                     ),
                     child: PopupMenuButton<MenuAction>(
                       icon: const Icon(Icons.more_vert, color: Colors.white),
@@ -180,24 +160,10 @@ class _TeacherViewState extends State<TeacherView> {
 
               // Welcome Section with real teacher info
               SliverToBoxAdapter(
-                child: Container(
+                child: UIUtils.createGradientContainer(
                   margin: const EdgeInsets.all(16),
                   padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Colors.white, Colors.grey[50]!],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
+                  gradient: UIUtils.lightGradient,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -206,16 +172,16 @@ class _TeacherViewState extends State<TeacherView> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4CAF50).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
+                              color: UIUtils.primaryGreen.withOpacity(0.1),
+                              borderRadius: UIUtils.mediumRadius,
                             ),
                             child: const Icon(
                               Icons.school,
-                              color: Color(0xFF4CAF50),
+                              color: UIUtils.primaryGreen,
                               size: 24,
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          UIUtils.mediumHorizontalSpacing,
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,11 +190,7 @@ class _TeacherViewState extends State<TeacherView> {
                                   _currentTeacher != null
                                       ? 'Welcome back, ${_currentTeacher!.name}!'
                                       : 'Welcome Back!',
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
+                                  style: UIUtils.subheadingStyle,
                                 ),
                                 Text(
                                   _isLoading
@@ -416,19 +378,19 @@ class _TeacherViewState extends State<TeacherView> {
     return Card(
       elevation: 3,
       shadowColor: color.withOpacity(0.3),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: UIUtils.largeRadius),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: UIUtils.largeRadius,
         child: Container(
           padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+          decoration: UIUtils.gradientDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [Colors.white, color.withOpacity(0.03)],
             ),
+            borderRadius: UIUtils.largeRadius,
           ),
           child: Row(
             children: [
@@ -436,28 +398,23 @@ class _TeacherViewState extends State<TeacherView> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: UIUtils.mediumRadius,
                 ),
                 child: Icon(icon, size: 24, color: color),
               ),
-              const SizedBox(width: 16),
+              UIUtils.mediumHorizontalSpacing,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: UIUtils.bodyStyle.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
+                    UIUtils.smallVerticalSpacing,
+                    Text(subtitle, style: UIUtils.captionStyle),
                   ],
                 ),
               ),

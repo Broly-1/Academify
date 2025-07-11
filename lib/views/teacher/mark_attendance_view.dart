@@ -5,6 +5,8 @@ import 'package:tuition_app/models/attendance.dart';
 import 'package:tuition_app/services/student_service.dart';
 import 'package:tuition_app/services/attendance_service.dart';
 import 'package:tuition_app/services/auth/auth_service.dart';
+import 'package:tuition_app/utils/ui_utils.dart';
+import 'package:tuition_app/utils/service_utils.dart';
 
 class MarkAttendanceView extends StatefulWidget {
   final ClassModel classModel;
@@ -227,26 +229,9 @@ class _MarkAttendanceViewState extends State<MarkAttendanceView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        title: Text(
-          'Mark Attendance - ${widget.classModel.grade} ${widget.classModel.section}',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: Colors.white),
+      appBar: UIUtils.createGradientAppBar(
+        title:
+            'Mark Attendance - ${widget.classModel.grade} ${widget.classModel.section}',
         actions: [
           if (_attendanceAlreadyMarked)
             Container(
@@ -254,7 +239,7 @@ class _MarkAttendanceViewState extends State<MarkAttendanceView> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.orange,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: UIUtils.extraLargeRadius,
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
@@ -628,35 +613,12 @@ class _MarkAttendanceViewState extends State<MarkAttendanceView> {
                   padding: const EdgeInsets.all(16),
                   child: SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isSaving ? null : _saveAttendance,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4CAF50),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 4,
-                      ),
-                      child: _isSaving
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(
-                              _attendanceAlreadyMarked
-                                  ? 'Update Attendance'
-                                  : 'Save Attendance',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
+                    child: UIUtils.createPrimaryButton(
+                      text: _attendanceAlreadyMarked
+                          ? 'Update Attendance'
+                          : 'Save Attendance',
+                      onPressed: _isSaving ? () {} : _saveAttendance,
+                      minimumSize: const Size(double.infinity, 56),
                     ),
                   ),
                 ),

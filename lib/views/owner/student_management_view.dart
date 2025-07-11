@@ -305,7 +305,6 @@ class _StudentManagementViewState extends State<StudentManagementView> {
               student.parentContact,
               Icons.phone,
             ),
-            _buildDetailRow('ID', student.id, Icons.badge),
           ],
         ),
         actions: [

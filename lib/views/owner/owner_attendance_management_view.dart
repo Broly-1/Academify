@@ -5,6 +5,8 @@ import 'package:tuition_app/services/class_service.dart';
 import 'package:tuition_app/services/student_service.dart';
 import 'package:tuition_app/services/attendance_service.dart';
 import 'package:tuition_app/views/owner/individual_student_attendance_view.dart';
+import 'package:tuition_app/utils/ui_utils.dart';
+import 'package:tuition_app/utils/service_utils.dart';
 
 class OwnerAttendanceManagementView extends StatefulWidget {
   const OwnerAttendanceManagementView({super.key});
@@ -72,11 +74,10 @@ class _OwnerAttendanceManagementViewState
         setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error loading data: $e'),
-            backgroundColor: Colors.red,
-          ),
+        ServiceUtils.handleServiceError(
+          error: e,
+          context: context,
+          customMessage: 'Error loading data: $e',
         );
       }
     }
@@ -121,23 +122,8 @@ class _OwnerAttendanceManagementViewState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        title: const Text(
-          'Attendance Management',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: Colors.white),
+      appBar: UIUtils.createGradientAppBar(
+        title: 'Attendance Management',
         actions: [
           IconButton(
             onPressed: _selectDateRange,
@@ -153,30 +139,8 @@ class _OwnerAttendanceManagementViewState
       ),
       body: _isLoading
           ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50).withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const CircularProgressIndicator(
-                      color: Color(0xFF4CAF50),
-                      strokeWidth: 3,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Loading attendance data...',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+              child: UIUtils.createLoadingIndicator(
+                message: 'Loading attendance data...',
               ),
             )
           : Column(
@@ -186,15 +150,11 @@ class _OwnerAttendanceManagementViewState
                   margin: const EdgeInsets.all(16),
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    gradient: UIUtils.primaryGradient,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF4CAF50).withOpacity(0.3),
+                        color: UIUtils.primaryGreen.withOpacity(0.3),
                         blurRadius: 15,
                         spreadRadius: 2,
                         offset: const Offset(0, 5),
@@ -207,7 +167,7 @@ class _OwnerAttendanceManagementViewState
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: UIUtils.mediumRadius,
                         ),
                         child: const Icon(
                           Icons.analytics,
@@ -215,7 +175,7 @@ class _OwnerAttendanceManagementViewState
                           size: 28,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      UIUtils.mediumHorizontalSpacing,
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,7 +188,7 @@ class _OwnerAttendanceManagementViewState
                                 color: Colors.white,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            UIUtils.smallVerticalSpacing,
                             Text(
                               '${_startDate.day}/${_startDate.month}/${_startDate.year} - ${_endDate.day}/${_endDate.month}/${_endDate.year}',
                               style: const TextStyle(
@@ -242,7 +202,7 @@ class _OwnerAttendanceManagementViewState
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: UIUtils.mediumRadius,
                         ),
                         child: IconButton(
                           onPressed: _selectDateRange,
@@ -268,18 +228,16 @@ class _OwnerAttendanceManagementViewState
                                 width: 120,
                                 height: 120,
                                 decoration: BoxDecoration(
-                                  color: const Color(
-                                    0xFF4CAF50,
-                                  ).withOpacity(0.1),
+                                  color: UIUtils.primaryGreen.withOpacity(0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
                                   Icons.school,
                                   size: 60,
-                                  color: Color(0xFF4CAF50),
+                                  color: UIUtils.primaryGreen,
                                 ),
                               ),
-                              const SizedBox(height: 24),
+                              UIUtils.largeVerticalSpacing,
                               const Text(
                                 'No classes found',
                                 style: TextStyle(
@@ -288,7 +246,7 @@ class _OwnerAttendanceManagementViewState
                                   color: Colors.grey,
                                 ),
                               ),
-                              const SizedBox(height: 12),
+                              UIUtils.mediumVerticalSpacing,
                               const Text(
                                 'Create classes to start tracking attendance',
                                 style: TextStyle(
@@ -582,10 +540,8 @@ class _OwnerAttendanceManagementViewState
                                                             ),
                                                         decoration: BoxDecoration(
                                                           color: Colors.white,
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                12,
-                                                              ),
+                                                          borderRadius: UIUtils
+                                                              .mediumRadius,
                                                           boxShadow: [
                                                             BoxShadow(
                                                               color: Colors
@@ -665,10 +621,8 @@ class _OwnerAttendanceManagementViewState
                                                                   ).withOpacity(
                                                                     0.1,
                                                                   ),
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                    12,
-                                                                  ),
+                                                              borderRadius: UIUtils
+                                                                  .mediumRadius,
                                                             ),
                                                             child: Column(
                                                               mainAxisSize:

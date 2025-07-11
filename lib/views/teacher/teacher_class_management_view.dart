@@ -6,6 +6,8 @@ import 'package:tuition_app/services/teacher_service.dart';
 import 'package:tuition_app/services/auth/auth_service.dart';
 import 'package:tuition_app/views/teacher/mark_attendance_view.dart';
 import 'package:tuition_app/views/teacher/view_attendance_reports_view.dart';
+import 'package:tuition_app/utils/ui_utils.dart';
+import 'package:tuition_app/utils/service_utils.dart';
 
 class TeacherClassManagementView extends StatefulWidget {
   const TeacherClassManagementView({super.key});
@@ -63,11 +65,10 @@ class _TeacherClassManagementViewState
         setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error loading classes: $e'),
-            backgroundColor: Colors.red,
-          ),
+        ServiceUtils.handleServiceError(
+          error: e,
+          context: context,
+          customMessage: 'Error loading classes: $e',
         );
       }
     }
@@ -98,75 +99,21 @@ class _TeacherClassManagementViewState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        title: const Text(
-          'My Classes',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      appBar: UIUtils.createGradientAppBar(title: 'My Classes'),
       body: _isLoading
           ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50).withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const CircularProgressIndicator(
-                      color: Color(0xFF4CAF50),
-                      strokeWidth: 3,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Loading your classes...',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+              child: UIUtils.createLoadingIndicator(
+                message: 'Loading your classes...',
               ),
             )
           : Column(
               children: [
                 // Modern Teacher Welcome Header
                 if (_currentTeacher != null)
-                  Container(
+                  UIUtils.createGradientContainer(
                     margin: const EdgeInsets.all(16),
                     padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF4CAF50).withOpacity(0.3),
-                          blurRadius: 15,
-                          spreadRadius: 2,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
+                    gradient: UIUtils.primaryGradient,
                     child: Row(
                       children: [
                         Container(
@@ -181,37 +128,32 @@ class _TeacherClassManagementViewState
                               _currentTeacher!.name.isNotEmpty
                                   ? _currentTeacher!.name[0].toUpperCase()
                                   : 'T',
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: UIUtils.whiteTextStyle.copyWith(
                                 fontSize: 24,
-                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        UIUtils.mediumHorizontalSpacing,
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Welcome back,',
-                                style: const TextStyle(
-                                  fontSize: 14,
+                                style: UIUtils.bodyStyle.copyWith(
                                   color: Colors.white70,
                                 ),
                               ),
                               Text(
                                 _currentTeacher!.name,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
+                                style: UIUtils.subheadingStyle.copyWith(
                                   color: Colors.white,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                               ),
-                              const SizedBox(height: 4),
+                              UIUtils.smallVerticalSpacing,
                               Row(
                                 children: [
                                   const Icon(
@@ -219,12 +161,11 @@ class _TeacherClassManagementViewState
                                     size: 16,
                                     color: Colors.white70,
                                   ),
-                                  const SizedBox(width: 4),
+                                  UIUtils.smallHorizontalSpacing,
                                   Flexible(
                                     child: Text(
                                       '${_assignedClasses.length} Classes Assigned',
-                                      style: const TextStyle(
-                                        fontSize: 14,
+                                      style: UIUtils.bodyStyle.copyWith(
                                         color: Colors.white70,
                                       ),
                                       overflow: TextOverflow.ellipsis,
@@ -290,260 +231,194 @@ class _TeacherClassManagementViewState
                             itemBuilder: (context, index) {
                               final classModel = _assignedClasses[index];
 
-                              return Container(
+                              return UIUtils.createCardContainer(
                                 margin: const EdgeInsets.only(bottom: 16),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 10,
-                                      spreadRadius: 1,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Card(
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(20),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
                                       children: [
-                                        Row(
-                                          children: [
-                                            Container(
-                                              width: 50,
-                                              height: 50,
-                                              decoration: BoxDecoration(
-                                                gradient: const LinearGradient(
-                                                  colors: [
-                                                    Color(0xFF4CAF50),
-                                                    Color(0xFF2E7D32),
-                                                  ],
-                                                  begin: Alignment.topLeft,
-                                                  end: Alignment.bottomRight,
-                                                ),
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  '${classModel.grade}${classModel.section}',
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 16),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    '${classModel.grade} ${classModel.section}',
-                                                    style: const TextStyle(
-                                                      fontSize: 20,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.black87,
+                                        Container(
+                                          width: 50,
+                                          height: 50,
+                                          decoration:
+                                              UIUtils.gradientDecoration(
+                                                gradient:
+                                                    UIUtils.primaryGradient,
+                                                borderRadius:
+                                                    const BorderRadius.all(
+                                                      Radius.circular(25),
                                                     ),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    'Academic Year ${classModel.year}',
-                                                    style: TextStyle(
-                                                      fontSize: 14,
+                                              ),
+                                          child: Center(
+                                            child: Text(
+                                              '${classModel.grade}${classModel.section}',
+                                              style: UIUtils.whiteTextStyle
+                                                  .copyWith(fontSize: 14),
+                                            ),
+                                          ),
+                                        ),
+                                        UIUtils.mediumHorizontalSpacing,
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                '${classModel.grade} ${classModel.section}',
+                                                style: UIUtils.subheadingStyle,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              UIUtils.smallVerticalSpacing,
+                                              Text(
+                                                'Academic Year ${classModel.year}',
+                                                style: UIUtils.bodyStyle
+                                                    .copyWith(
                                                       color: Colors.grey[600],
                                                     ),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ],
+                                                overflow: TextOverflow.ellipsis,
                                               ),
-                                            ),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 12,
-                                                    vertical: 6,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: const Color(
-                                                  0xFF4CAF50,
-                                                ).withOpacity(0.1),
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                              ),
-                                              child: const Text(
-                                                'Assigned',
-                                                style: TextStyle(
-                                                  color: Color(0xFF4CAF50),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: UIUtils.primaryGreen
+                                                .withOpacity(0.1),
+                                            borderRadius: UIUtils.largeRadius,
+                                          ),
+                                          child: Text(
+                                            'Assigned',
+                                            style: UIUtils.captionStyle
+                                                .copyWith(
+                                                  color: UIUtils.primaryGreen,
                                                   fontWeight: FontWeight.bold,
-                                                  fontSize: 12,
                                                 ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 16),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Container(
-                                                padding: const EdgeInsets.all(
-                                                  12,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.grey[50],
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                ),
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(
-                                                      Icons.people,
-                                                      size: 16,
-                                                      color: Color(0xFF4CAF50),
-                                                    ),
-                                                    const SizedBox(width: 8),
-                                                    Expanded(
-                                                      child: Text(
-                                                        '${classModel.studentIds.length} Students',
-                                                        style: const TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Container(
-                                                padding: const EdgeInsets.all(
-                                                  12,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.grey[50],
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                ),
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(
-                                                      Icons.currency_rupee,
-                                                      size: 16,
-                                                      color: Color(0xFF4CAF50),
-                                                    ),
-                                                    const SizedBox(width: 8),
-                                                    Expanded(
-                                                      child: Text(
-                                                        '₹${classModel.monthlyFee.toStringAsFixed(0)}/month',
-                                                        style: const TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 20),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: ElevatedButton.icon(
-                                                onPressed: () =>
-                                                    _navigateToMarkAttendance(
-                                                      classModel,
-                                                    ),
-                                                icon: const Icon(
-                                                  Icons.check_circle,
-                                                  color: Colors.white,
-                                                ),
-                                                label: const Text(
-                                                  'Mark Attendance',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: const Color(
-                                                    0xFF4CAF50,
-                                                  ),
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        vertical: 12,
-                                                      ),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: ElevatedButton.icon(
-                                                onPressed: () =>
-                                                    _navigateToAttendanceReports(
-                                                      classModel,
-                                                    ),
-                                                icon: const Icon(
-                                                  Icons.analytics,
-                                                  color: Colors.white,
-                                                ),
-                                                label: const Text(
-                                                  'View Reports',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.blue,
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        vertical: 12,
-                                                      ),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                          ),
                                         ),
                                       ],
                                     ),
-                                  ),
+                                    UIUtils.mediumVerticalSpacing,
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Container(
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[50],
+                                              borderRadius:
+                                                  UIUtils.mediumRadius,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.people,
+                                                  size: 16,
+                                                  color: UIUtils.primaryGreen,
+                                                ),
+                                                UIUtils.smallHorizontalSpacing,
+                                                Expanded(
+                                                  child: Text(
+                                                    '${classModel.studentIds.length} Students',
+                                                    style: UIUtils.bodyStyle
+                                                        .copyWith(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        UIUtils.mediumHorizontalSpacing,
+                                        Expanded(
+                                          child: Container(
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[50],
+                                              borderRadius:
+                                                  UIUtils.mediumRadius,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.currency_rupee,
+                                                  size: 16,
+                                                  color: UIUtils.primaryGreen,
+                                                ),
+                                                UIUtils.smallHorizontalSpacing,
+                                                Expanded(
+                                                  child: Text(
+                                                    '₹${classModel.monthlyFee.toStringAsFixed(0)}/month',
+                                                    style: UIUtils.bodyStyle
+                                                        .copyWith(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    UIUtils.largeVerticalSpacing,
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: UIUtils.createPrimaryButton(
+                                            text: 'Mark Attendance',
+                                            icon: Icons.check_circle,
+                                            onPressed: () =>
+                                                _navigateToMarkAttendance(
+                                                  classModel,
+                                                ),
+                                          ),
+                                        ),
+                                        UIUtils.mediumHorizontalSpacing,
+                                        Expanded(
+                                          child: ElevatedButton.icon(
+                                            onPressed: () =>
+                                                _navigateToAttendanceReports(
+                                                  classModel,
+                                                ),
+                                            icon: const Icon(
+                                              Icons.analytics,
+                                              color: Colors.white,
+                                            ),
+                                            label: const Text(
+                                              'View Reports',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.blue,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 12,
+                                                  ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    UIUtils.mediumRadius,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               );
                             },

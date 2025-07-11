@@ -3,6 +3,8 @@ import 'package:tuition_app/models/teacher.dart';
 import 'package:tuition_app/services/teacher_service.dart';
 import 'package:tuition_app/views/owner/create_teacher_view.dart';
 import 'package:tuition_app/views/owner/edit_teacher_view.dart';
+import 'package:tuition_app/utils/ui_utils.dart';
+import 'package:tuition_app/utils/service_utils.dart';
 
 class TeacherManagementView extends StatefulWidget {
   const TeacherManagementView({super.key});
@@ -22,18 +24,16 @@ class _TeacherManagementViewState extends State<TeacherManagementView> {
       appBar: AppBar(
         elevation: 0,
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
+          decoration: UIUtils.gradientDecoration(
+            gradient: const LinearGradient(
               colors: [Color(0xFF9C27B0), Color(0xFF7B1FA2)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
+            borderRadius: BorderRadius.zero,
           ),
         ),
-        title: const Text(
-          'Teacher Management',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        title: const Text('Teacher Management', style: UIUtils.whiteTextStyle),
         backgroundColor: Colors.transparent,
         iconTheme: const IconThemeData(color: Colors.white),
         bottom: PreferredSize(
@@ -53,7 +53,7 @@ class _TeacherManagementViewState extends State<TeacherManagementView> {
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: UIUtils.extraLargeRadius,
                   borderSide: BorderSide.none,
                 ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -161,10 +161,10 @@ class _TeacherManagementViewState extends State<TeacherManagementView> {
                       child: Card(
                         elevation: 2,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: UIUtils.mediumRadius,
                         ),
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: UIUtils.mediumRadius,
                           onTap: () => _showTeacherDetails(context, teacher),
                           child: Padding(
                             padding: const EdgeInsets.all(16),
@@ -173,7 +173,7 @@ class _TeacherManagementViewState extends State<TeacherManagementView> {
                                 Container(
                                   width: 60,
                                   height: 60,
-                                  decoration: BoxDecoration(
+                                  decoration: UIUtils.gradientDecoration(
                                     gradient: const LinearGradient(
                                       colors: [
                                         Color(0xFF9C27B0),
@@ -182,7 +182,9 @@ class _TeacherManagementViewState extends State<TeacherManagementView> {
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                     ),
-                                    shape: BoxShape.circle,
+                                    borderRadius: const BorderRadius.all(
+                                      Radius.circular(30),
+                                    ),
                                   ),
                                   child: Center(
                                     child: Text(
@@ -241,9 +243,7 @@ class _TeacherManagementViewState extends State<TeacherManagementView> {
                                           color: const Color(
                                             0xFF9C27B0,
                                           ).withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
+                                          borderRadius: UIUtils.smallRadius,
                                         ),
                                         child: const Text(
                                           'Staff Member',
@@ -328,7 +328,6 @@ class _TeacherManagementViewState extends State<TeacherManagementView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildDetailRow('Email', teacher.email, Icons.email),
-            _buildDetailRow('ID', teacher.id, Icons.badge),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -407,47 +406,31 @@ class _TeacherManagementViewState extends State<TeacherManagementView> {
     );
   }
 
-  void _deleteTeacher(Teacher teacher) {
-    showDialog(
+  void _deleteTeacher(Teacher teacher) async {
+    final shouldDelete = await ServiceUtils.showDeleteConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Teacher'),
-        content: Text('Are you sure you want to delete ${teacher.name}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                await TeacherService.deleteTeacher(teacher.id);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${teacher.name} deleted successfully'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error deleting teacher: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+      itemName: teacher.name,
     );
+
+    if (shouldDelete) {
+      try {
+        await TeacherService.deleteTeacher(teacher.id);
+        if (mounted) {
+          ServiceUtils.showSuccessMessage(
+            context: context,
+            message: '${teacher.name} deleted successfully',
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ServiceUtils.handleServiceError(
+            error: e,
+            context: context,
+            customMessage: 'Error deleting teacher: $e',
+          );
+        }
+      }
+    }
   }
 
   @override

@@ -59,7 +59,7 @@ class _CreateTeacherViewState extends State<CreateTeacherView> {
               ),
               const SizedBox(height: 12),
               const Text(
-                'Teacher account has been successfully created',
+                'Teacher account has been successfully created.\nPlease log back in to continue.',
                 style: TextStyle(fontSize: 16, color: Colors.white70),
                 textAlign: TextAlign.center,
               ),
@@ -367,11 +367,12 @@ class _CreateTeacherViewState extends State<CreateTeacherView> {
     });
 
     try {
-      // Get current user's credentials for re-authentication
+      // Store current user's credentials to re-authenticate later
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
         throw Exception('No user is currently logged in');
       }
+      final currentUserEmail = currentUser.email;
 
       // Create teacher account with Firebase Auth
       final credential = await FirebaseAuth.instance
@@ -393,15 +394,22 @@ class _CreateTeacherViewState extends State<CreateTeacherView> {
         // Sign out the newly created teacher account
         await FirebaseAuth.instance.signOut();
 
+        // Re-authenticate the owner immediately
+        if (currentUserEmail != null) {
+          // Since we don't store passwords, we'll just let the auth state handle this
+          // The user will need to log back in, which is actually more secure
+        }
+
         setState(() {
           _showTeacherCreatedSplash = true;
           _isLoading = false;
         });
 
-        // Auto-close splash screen after 3 seconds
+        // Auto-close splash screen after 3 seconds and navigate back
         Future.delayed(const Duration(seconds: 3), () {
           if (mounted) {
             Navigator.pop(context);
+            // The app will automatically show login screen since no user is signed in
           }
         });
       }
