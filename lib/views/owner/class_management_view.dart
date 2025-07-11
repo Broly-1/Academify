@@ -469,7 +469,7 @@ class ClassManagementView extends StatelessWidget {
                         child: _buildInfoItem(
                           Icons.attach_money,
                           'Monthly Fee',
-                          '₹${classModel.monthlyFee.toStringAsFixed(0)}',
+                          'Rs. ${classModel.monthlyFee.toStringAsFixed(0)}',
                           Colors.green,
                         ),
                       ),

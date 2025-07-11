@@ -6,6 +6,7 @@ import 'package:tuition_app/views/owner/student_management_view.dart';
 import 'package:tuition_app/views/owner/teacher_management_view.dart';
 import 'package:tuition_app/views/owner/owner_attendance_management_view.dart';
 import 'package:tuition_app/views/owner/payment_management_view.dart';
+import 'package:tuition_app/views/owner/academy_stats_view.dart';
 
 class OwnerView extends StatefulWidget {
   const OwnerView({super.key});
@@ -22,115 +23,175 @@ class _OwnerViewState extends State<OwnerView> {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // App Bar
+            // Beautiful Enhanced App Bar
             SliverAppBar(
-              expandedHeight: 120,
-              backgroundColor: const Color.fromARGB(255, 73, 226, 31),
+              expandedHeight: 100,
+              backgroundColor: Colors.transparent,
               foregroundColor: Colors.white,
               pinned: true,
               elevation: 0,
-              centerTitle: true,
-              flexibleSpace: FlexibleSpaceBar(
-                centerTitle: true,
-                titlePadding: const EdgeInsets.only(bottom: 16),
-                title: const Text(
-                  'Admin Dashboard',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontSize: 20,
+              centerTitle: false,
+              flexibleSpace: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
                   ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(25),
+                    bottomRight: Radius.circular(25),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 15,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
                 ),
-                background: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color.fromARGB(255, 73, 226, 31),
-                        Color.fromARGB(255, 56, 180, 24),
-                      ],
+                child: FlexibleSpaceBar(
+                  title: null,
+                  background: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.admin_panel_settings,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  'Admin Dashboard',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  'Control Center',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: PopupMenuButton<MenuAction>(
+                              icon: const Icon(
+                                Icons.more_vert,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                              onSelected: (value) async {
+                                switch (value) {
+                                  case MenuAction.logout:
+                                    final shouldLogout = await showLogoutDialog(
+                                      context,
+                                    );
+                                    if (shouldLogout) {
+                                      await AuthService.firebase().logOut();
+                                    }
+                                    break;
+                                }
+                              },
+                              itemBuilder: (context) {
+                                return const [
+                                  PopupMenuItem<MenuAction>(
+                                    value: MenuAction.logout,
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.logout, color: Colors.red),
+                                        SizedBox(width: 8),
+                                        Text('Logout'),
+                                      ],
+                                    ),
+                                  ),
+                                ];
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-              actions: [
-                Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: PopupMenuButton<MenuAction>(
-                    icon: const Icon(Icons.more_vert, color: Colors.white),
-                    onSelected: (value) async {
-                      switch (value) {
-                        case MenuAction.logout:
-                          final shouldLogout = await showLogoutDialog(context);
-                          if (shouldLogout) {
-                            await AuthService.firebase().logOut();
-                          }
-                          break;
-                      }
-                    },
-                    itemBuilder: (context) {
-                      return const [
-                        PopupMenuItem<MenuAction>(
-                          value: MenuAction.logout,
-                          child: Row(
-                            children: [
-                              Icon(Icons.logout, color: Colors.red),
-                              SizedBox(width: 8),
-                              Text('Logout'),
-                            ],
-                          ),
-                        ),
-                      ];
-                    },
-                  ),
-                ),
-              ],
             ),
 
-            // Welcome Section
+            // Enhanced Welcome Section
             SliverToBoxAdapter(
               child: Container(
-                margin: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      Color.fromARGB(255, 73, 226, 31),
-                      Color.fromARGB(255, 56, 180, 24),
-                    ],
+                    colors: [Colors.white, Colors.blue.shade50],
                   ),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color.fromARGB(
-                        255,
-                        73,
-                        226,
-                        31,
-                      ).withOpacity(0.3),
-                      blurRadius: 15,
-                      spreadRadius: 2,
-                      offset: const Offset(0, 5),
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      width: 60,
+                      height: 60,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF4CAF50), Color(0xFF2E7D32)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF4CAF50).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: const Icon(
-                        Icons.admin_panel_settings,
+                        Icons.business_center,
                         color: Colors.white,
                         size: 28,
                       ),
@@ -144,9 +205,9 @@ class _OwnerViewState extends State<OwnerView> {
                           const Text(
                             'Admin Control Center',
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Colors.black87,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -154,10 +215,9 @@ class _OwnerViewState extends State<OwnerView> {
                           const SizedBox(height: 4),
                           Text(
                             'Complete management of your tuition center',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w300,
+                              color: Colors.grey[600],
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -170,34 +230,57 @@ class _OwnerViewState extends State<OwnerView> {
               ),
             ),
 
-            // Management Cards
+            // Enhanced Management Cards Section
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Management Center',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4CAF50).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.dashboard,
+                            color: Color(0xFF4CAF50),
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Management Center',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 40),
+                      child: Text(
+                        'Manage all aspects of your tuition center',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Manage all aspects of your tuition center',
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
             ),
 
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   // First row of cards
@@ -284,7 +367,7 @@ class _OwnerViewState extends State<OwnerView> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Third row - Payment Management
+                  // Third row - Payment Management and Stats
                   IntrinsicHeight(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -307,8 +390,20 @@ class _OwnerViewState extends State<OwnerView> {
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: Container(),
-                        ), // Empty space for symmetry
+                          child: _buildModernDashboardCard(
+                            context,
+                            title: 'Statistics',
+                            subtitle: 'Academy insights',
+                            icon: Icons.analytics,
+                            color: const Color(0xFF00BCD4),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AcademyStatsView(),
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -332,24 +427,29 @@ class _OwnerViewState extends State<OwnerView> {
     required VoidCallback onTap,
   }) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 120, maxHeight: 160),
+      constraints: const BoxConstraints(minHeight: 110, maxHeight: 140),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, color.withOpacity(0.03)],
+        ),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
             color: color.withOpacity(0.15),
-            blurRadius: 12,
-            spreadRadius: 2,
-            offset: const Offset(0, 4),
+            blurRadius: 15,
+            spreadRadius: 1,
+            offset: const Offset(0, 6),
           ),
         ],
+        border: Border.all(color: color.withOpacity(0.1), width: 1),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -357,12 +457,17 @@ class _OwnerViewState extends State<OwnerView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: color.withOpacity(0.2), width: 1),
                   ),
-                  child: Icon(icon, size: 24, color: color),
+                  child: Icon(icon, size: 26, color: color),
                 ),
                 const SizedBox(height: 12),
                 Flexible(
@@ -384,7 +489,7 @@ class _OwnerViewState extends State<OwnerView> {
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[600],
-                      fontWeight: FontWeight.w400,
+                      fontWeight: FontWeight.w500,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

@@ -268,13 +268,23 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
                               ),
                             ),
                           ),
-                          ElevatedButton.icon(
-                            onPressed: _selectDateRange,
-                            icon: const Icon(Icons.date_range),
-                            label: const Text('Change'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: UIUtils.primaryGreen,
-                              foregroundColor: Colors.white,
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: ElevatedButton.icon(
+                              onPressed: _selectDateRange,
+                              icon: const Icon(Icons.date_range, size: 16),
+                              label: const Text(
+                                'Change',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: UIUtils.primaryGreen,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -365,44 +375,79 @@ class _ViewAttendanceReportsViewState extends State<ViewAttendanceReportsView> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text('Contact: ${student.parentContact}'),
-                                    const SizedBox(height: 4),
-                                    Row(
+                                    const SizedBox(height: 6),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 4,
                                       children: [
                                         Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 8,
-                                            vertical: 2,
+                                            vertical: 4,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: Colors.green[100],
-                                            borderRadius: UIUtils.smallRadius,
-                                          ),
-                                          child: Text(
-                                            'Present: $presentDays',
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.green,
-                                              fontWeight: FontWeight.bold,
+                                            color: Colors.green[50],
+                                            border: Border.all(
+                                              color: Colors.green[300]!,
+                                              width: 1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
                                             ),
                                           ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.check_circle,
+                                                size: 14,
+                                                color: Colors.green[700],
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '$presentDays',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.green[700],
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                        UIUtils.smallHorizontalSpacing,
                                         Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 8,
-                                            vertical: 2,
+                                            vertical: 4,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: Colors.red[100],
-                                            borderRadius: UIUtils.smallRadius,
-                                          ),
-                                          child: Text(
-                                            'Absent: $absentDays',
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.red,
-                                              fontWeight: FontWeight.bold,
+                                            color: Colors.red[50],
+                                            border: Border.all(
+                                              color: Colors.red[300]!,
+                                              width: 1,
                                             ),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.cancel,
+                                                size: 14,
+                                                color: Colors.red[700],
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '$absentDays',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.red[700],
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ],

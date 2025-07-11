@@ -26,6 +26,8 @@ class TeacherService {
     }
   }
 
+  // Create a new teacher profile with specific UID (for Firebase Auth integration)
+
   // Create a new teacher profile
   static Future<String> createTeacher(Teacher teacher) async {
     try {

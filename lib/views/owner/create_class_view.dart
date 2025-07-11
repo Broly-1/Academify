@@ -117,7 +117,7 @@ class _CreateClassViewState extends State<CreateClassView> {
                           labelText: 'Monthly Fee',
                           hintText: 'e.g., 1500, 2000',
                           border: OutlineInputBorder(),
-                          prefixText: '₹ ',
+                          prefixText: 'Rs. ',
                         ),
                         keyboardType: TextInputType.number,
                         validator: (value) {

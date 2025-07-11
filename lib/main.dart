@@ -17,6 +17,7 @@ void main() async {
   runApp(
     MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromARGB(255, 216, 35, 35),
@@ -44,9 +45,16 @@ class _HomePageState extends State<HomePage> {
     try {
       final email = user.email ?? '';
       if (email.isNotEmpty) {
-        // Extract display name from email (part before @)
-        final displayName = email.split('@').first;
-        await TeacherService.createOrUpdateTeacherProfile(email, displayName);
+        // Check if teacher profile already exists
+        final existingTeacher = await TeacherService.getTeacherByEmail(email);
+
+        // Only create profile if it doesn't exist (don't update existing names)
+        if (existingTeacher == null) {
+          // Extract display name from email (part before @) as fallback only
+          final displayName = email.split('@').first;
+          await TeacherService.createOrUpdateTeacherProfile(email, displayName);
+        }
+        // If teacher exists, don't update their name - preserve what was set during creation
       }
     } catch (e) {
       showDialog(
@@ -54,7 +62,7 @@ class _HomePageState extends State<HomePage> {
         builder: (context) {
           return AlertDialog(
             title: const Text('Error'),
-            content: Text('Failed to create or update teacher profile: $e'),
+            content: Text('Failed to ensure teacher profile: $e'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -79,7 +87,8 @@ class _HomePageState extends State<HomePage> {
               builder: (context, authSnapshot) {
                 if (authSnapshot.hasData && authSnapshot.data != null) {
                   final user = authSnapshot.data!;
-                  if (user.email == 'hassangaming111@gmail.com') {
+                  if (user.email == 'hassangaming111@gmail.com' ||
+                      user.email == 'testing@gmail.com') {
                     return const OwnerView();
                   } else {
                     // Automatically create teacher profile for non-owner users

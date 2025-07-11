@@ -69,7 +69,7 @@ class _AssignTeacherViewState extends State<AssignTeacherView> {
                     Text('Section: ${widget.classModel.section}'),
                     Text('Year: ${widget.classModel.year}'),
                     Text(
-                      'Monthly Fee: ₹${widget.classModel.monthlyFee.toStringAsFixed(0)}',
+                      'Monthly Fee: Rs. ${widget.classModel.monthlyFee.toStringAsFixed(0)}',
                     ),
                     if (_currentTeacher != null)
                       Text('Current Teacher: ${_currentTeacher!.name}')

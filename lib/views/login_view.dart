@@ -200,15 +200,6 @@ class _LoginViewState extends State<LoginView> {
 
     try {
       await AuthService.firebase().logIn(email: email, password: password);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Welcome back!'),
-            backgroundColor: UIUtils.primaryGreen,
-          ),
-        );
-      }
     } catch (e) {
       String errorMessage;
 

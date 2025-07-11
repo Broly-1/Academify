@@ -196,11 +196,13 @@ class PaymentService {
       final totalRevenue = payments
           .where((p) => p.isPaid)
           .map((p) => p.amount)
+          // ignore: avoid_types_as_parameter_names
           .fold<double>(0, (sum, amount) => sum + amount);
 
       final pendingRevenue = payments
           .where((p) => !p.isPaid)
           .map((p) => p.amount)
+          // ignore: avoid_types_as_parameter_names
           .fold<double>(0, (sum, amount) => sum + amount);
 
       return {

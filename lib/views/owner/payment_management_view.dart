@@ -209,7 +209,7 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
                             ),
                           ),
                           Text(
-                            '₹${_selectedClass!.monthlyFee}',
+                            'Rs. ${_selectedClass!.monthlyFee}',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -227,8 +227,8 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
               TextField(
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  labelText: 'Extra Dues (₹)',
-                  prefixText: '₹ ',
+                  labelText: 'Extra Dues (Rs.)',
+                  prefixText: 'Rs. ',
                   hintText: '0.00',
                   border: OutlineInputBorder(),
                 ),
@@ -265,7 +265,7 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
                             ),
                           ),
                           Text(
-                            '₹${(_selectedClass!.monthlyFee + extraDues).toStringAsFixed(2)}',
+                            'Rs. ${(_selectedClass!.monthlyFee + extraDues).toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -580,7 +580,7 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
                     Expanded(
                       child: _buildRevenueCard(
                         'Total Revenue',
-                        '₹${_totalRevenue.toStringAsFixed(2)}',
+                        'Rs. ${_totalRevenue.toStringAsFixed(2)}',
                         Icons.account_balance_wallet,
                         Colors.green,
                       ),
@@ -589,7 +589,7 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
                     Expanded(
                       child: _buildRevenueCard(
                         'Pending Revenue',
-                        '₹${_pendingRevenue.toStringAsFixed(2)}',
+                        'Rs. ${_pendingRevenue.toStringAsFixed(2)}',
                         Icons.hourglass_empty,
                         Colors.orange,
                       ),
@@ -601,14 +601,14 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
                   children: [
                     _buildRevenueCard(
                       'Total Revenue',
-                      '₹${_totalRevenue.toStringAsFixed(2)}',
+                      'Rs. ${_totalRevenue.toStringAsFixed(2)}',
                       Icons.account_balance_wallet,
                       Colors.green,
                     ),
                     const SizedBox(height: 8),
                     _buildRevenueCard(
                       'Pending Revenue',
-                      '₹${_pendingRevenue.toStringAsFixed(2)}',
+                      'Rs. ${_pendingRevenue.toStringAsFixed(2)}',
                       Icons.hourglass_empty,
                       Colors.orange,
                     ),
@@ -785,26 +785,39 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
   }
 
   Widget _buildStudentsTab() {
+    // Filter to only show students who have actual payment records
+    final studentsWithPayments = _students.where((student) {
+      return _payments.any((payment) => payment.studentId == student.id);
+    }).toList();
+
+    if (studentsWithPayments.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.payment, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              'No payment records found',
+              style: TextStyle(fontSize: 18, color: Colors.grey),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Create payments first to see student payment status',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
     return ListView.builder(
       padding: const EdgeInsets.all(12),
-      itemCount: _students.length,
+      itemCount: studentsWithPayments.length,
       itemBuilder: (context, index) {
-        final student = _students[index];
-        final payment = _payments.firstWhere(
-          (p) => p.studentId == student.id,
-          orElse: () => Payment(
-            id: 'temp-${student.id}',
-            studentId: student.id,
-            classId: _selectedClass!.id,
-            month: _selectedMonth,
-            year: _selectedYear,
-            amount: 0,
-            dueDate: DateTime.now(),
-            isPaid: false,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-          ),
-        );
+        final student = studentsWithPayments[index];
+        final payment = _payments.firstWhere((p) => p.studentId == student.id);
 
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
@@ -820,7 +833,7 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Amount: ₹${payment.amount}'),
+                Text('Amount: Rs. ${payment.amount}'),
                 if (payment.receiptNumber != null)
                   Text('Receipt: ${payment.receiptNumber}'),
                 if (payment.isOverdue)
@@ -833,43 +846,41 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
                   ),
               ],
             ),
-            trailing: payment.id.startsWith('temp-')
-                ? const Text('No Payment')
-                : PopupMenuButton(
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'toggle',
-                        child: Text(
-                          payment.isPaid ? 'Mark as Unpaid' : 'Mark as Paid',
-                        ),
-                      ),
-                      if (payment.isPaid)
-                        const PopupMenuItem(
-                          value: 'receipt',
-                          child: Text('Generate Receipt'),
-                        ),
-                    ],
-                    onSelected: (value) async {
-                      if (value == 'toggle') {
-                        if (payment.isPaid) {
-                          await _markPaymentAsUnpaid(payment);
-                        } else {
-                          await _markPaymentAsPaid(payment);
-                        }
-                      } else if (value == 'receipt') {
-                        try {
-                          await PDFService.generateIndividualPaymentReceipt(
-                            payment: payment,
-                            student: student,
-                            classModel: _selectedClass!,
-                          );
-                          _showSuccessSnackBar('Receipt generated');
-                        } catch (e) {
-                          _showErrorSnackBar('Failed to generate receipt: $e');
-                        }
-                      }
-                    },
+            trailing: PopupMenuButton(
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'toggle',
+                  child: Text(
+                    payment.isPaid ? 'Mark as Unpaid' : 'Mark as Paid',
                   ),
+                ),
+                if (payment.isPaid)
+                  const PopupMenuItem(
+                    value: 'receipt',
+                    child: Text('Generate Receipt'),
+                  ),
+              ],
+              onSelected: (value) async {
+                if (value == 'toggle') {
+                  if (payment.isPaid) {
+                    await _markPaymentAsUnpaid(payment);
+                  } else {
+                    await _markPaymentAsPaid(payment);
+                  }
+                } else if (value == 'receipt') {
+                  try {
+                    await PDFService.generateIndividualPaymentReceipt(
+                      payment: payment,
+                      student: student,
+                      classModel: _selectedClass!,
+                    );
+                    _showSuccessSnackBar('Receipt generated');
+                  } catch (e) {
+                    _showErrorSnackBar('Failed to generate receipt: $e');
+                  }
+                }
+              },
+            ),
           ),
         );
       },
@@ -926,7 +937,7 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Receipt: ${payment.receiptNumber ?? 'N/A'}'),
-                      Text('Amount: ₹${payment.amount}'),
+                      Text('Amount: Rs. ${payment.amount}'),
                       if (payment.paidDate != null)
                         Text(
                           'Paid: ${payment.paidDate!.day}/${payment.paidDate!.month}/${payment.paidDate!.year}',

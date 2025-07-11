@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:printing/printing.dart';
 import 'package:tuition_app/models/student.dart';
@@ -45,7 +46,20 @@ class PDFService {
     final pageWidth = page.getClientSize().width;
     double yPosition = 40;
 
-    // Academy logo placeholder
+    // Academy logo - You can replace this with your actual logo
+    // To use an image logo, follow these steps:
+    // 1. Add your logo image to assets/images/academy_logo.png
+    // 2. Update pubspec.yaml to include the asset
+    // 3. Use the commented code below:
+
+    /*
+    // Load and display your academy logo from assets
+    final logoBytes = await rootBundle.load('assets/images/academy_logo.png');
+    final logoImage = PdfBitmap(logoBytes.buffer.asUint8List());
+    graphics.drawImage(logoImage, Rect.fromLTWH(50, yPosition, 60, 60));
+    */
+
+    // Current placeholder design (replace this when you add your logo)
     final logoRect = Rect.fromLTWH(50, yPosition, 60, 60);
     graphics.drawRectangle(
       pen: PdfPen(_primaryColor, width: 2),
@@ -53,7 +67,7 @@ class PDFService {
       bounds: logoRect,
     );
 
-    // Draw simple logo text
+    // Academy initial with professional styling
     graphics.drawString(
       'A',
       PdfStandardFont(PdfFontFamily.helvetica, 36, style: PdfFontStyle.bold),
@@ -418,7 +432,7 @@ class PDFService {
       _bodyFont,
       _subHeaderFont,
       'Monthly Fee: ',
-      '₹${classModel.monthlyFee.toStringAsFixed(2)}',
+      'Rs. ${classModel.monthlyFee.toStringAsFixed(2)}',
       rightColumnX,
       yPosition,
       maxWidth: columnWidth,
@@ -868,7 +882,7 @@ class PDFService {
 
     // Enhanced amount display
     graphics.drawString(
-      '₹${payment.amount.toStringAsFixed(2)}',
+      'Rs. ${payment.amount.toStringAsFixed(2)}',
       PdfStandardFont(PdfFontFamily.helvetica, 32, style: PdfFontStyle.bold),
       bounds: Rect.fromLTWH(60, yPosition + 35, contentWidth - 20, 40),
       brush: PdfSolidBrush(_successColor), // Green for the amount value
@@ -1350,7 +1364,7 @@ class PDFService {
       );
 
       graphics.drawString(
-        '₹${payment.amount.toStringAsFixed(2)}',
+        'Rs. ${payment.amount.toStringAsFixed(2)}',
         PdfStandardFont(PdfFontFamily.helvetica, 32, style: PdfFontStyle.bold),
         bounds: Rect.fromLTWH(60, yPosition + 35, contentWidth - 20, 40),
         brush: PdfSolidBrush(_successColor), // Green for the amount value
@@ -1578,7 +1592,7 @@ class PDFService {
       _bodyFont,
       _subHeaderFont,
       'Monthly Tuition Fee:',
-      '₹${monthlyFee.toStringAsFixed(2)}',
+      'Rs. ${monthlyFee.toStringAsFixed(2)}',
       leftColumnX,
       yPosition,
       maxWidth: columnWidth,
@@ -1588,7 +1602,7 @@ class PDFService {
       _bodyFont,
       _subHeaderFont,
       'Extra Dues:',
-      '₹${extraDues.toStringAsFixed(2)}',
+      'Rs. ${extraDues.toStringAsFixed(2)}',
       rightColumnX,
       yPosition,
       maxWidth: columnWidth,
@@ -1600,7 +1614,7 @@ class PDFService {
       _bodyFont,
       _subHeaderFont,
       'Late Fee:',
-      '₹0.00',
+      'Rs. 0.00',
       leftColumnX,
       yPosition,
       maxWidth: columnWidth,
@@ -1610,7 +1624,7 @@ class PDFService {
       _bodyFont,
       _subHeaderFont,
       'Discount:',
-      '₹0.00',
+      'Rs. 0.00',
       rightColumnX,
       yPosition,
       maxWidth: columnWidth,
@@ -1635,7 +1649,7 @@ class PDFService {
     );
 
     graphics.drawString(
-      '₹${feeAmount.toStringAsFixed(2)}',
+      'Rs. ${feeAmount.toStringAsFixed(2)}',
       PdfStandardFont(PdfFontFamily.helvetica, 26, style: PdfFontStyle.bold),
       bounds: Rect.fromLTWH(60, yPosition + 10, contentWidth - 20, 35),
       brush: PdfSolidBrush(_primaryColor),
@@ -1837,7 +1851,7 @@ class PDFService {
         _bodyFont,
         _subHeaderFont,
         'Monthly Tuition Fee:',
-        '₹${monthlyFee.toStringAsFixed(2)}',
+        'Rs. ${monthlyFee.toStringAsFixed(2)}',
         leftColumnX,
         yPosition,
         maxWidth: columnWidth,
@@ -1847,7 +1861,7 @@ class PDFService {
         _bodyFont,
         _subHeaderFont,
         'Extra Dues:',
-        '₹${extraDues.toStringAsFixed(2)}',
+        'Rs. ${extraDues.toStringAsFixed(2)}',
         rightColumnX,
         yPosition,
         maxWidth: columnWidth,
@@ -1859,7 +1873,7 @@ class PDFService {
         _bodyFont,
         _subHeaderFont,
         'Late Fee:',
-        '₹0.00',
+        'Rs. 0.00',
         leftColumnX,
         yPosition,
         maxWidth: columnWidth,
@@ -1869,7 +1883,7 @@ class PDFService {
         _bodyFont,
         _subHeaderFont,
         'Discount:',
-        '₹0.00',
+        'Rs. 0.00',
         rightColumnX,
         yPosition,
         maxWidth: columnWidth,
@@ -1894,7 +1908,7 @@ class PDFService {
       );
 
       graphics.drawString(
-        '₹${feeAmount.toStringAsFixed(2)}',
+        'Rs. ${feeAmount.toStringAsFixed(2)}',
         PdfStandardFont(PdfFontFamily.helvetica, 26, style: PdfFontStyle.bold),
         bounds: Rect.fromLTWH(60, yPosition + 10, contentWidth - 20, 35),
         brush: PdfSolidBrush(_primaryColor),

@@ -290,6 +290,60 @@ class _IndividualStudentAttendanceViewState
                                 ],
                               ),
                               const SizedBox(height: 16),
+                              // Attendance percentage display
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: _getAttendanceColor(
+                                    percentage,
+                                  ).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: _getAttendanceColor(
+                                      percentage,
+                                    ).withOpacity(0.3),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.analytics,
+                                      color: _getAttendanceColor(percentage),
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Attendance Rate',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: _getAttendanceColor(
+                                                percentage,
+                                              ),
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          Text(
+                                            '${percentage.toStringAsFixed(1)}%',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: _getAttendanceColor(
+                                                percentage,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
                               Row(
                                 children: [
                                   Expanded(
@@ -339,6 +393,7 @@ class _IndividualStudentAttendanceViewState
                               child: Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
                                       '$presentDays',
@@ -366,6 +421,7 @@ class _IndividualStudentAttendanceViewState
                               child: Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
                                       '$absentDays',
@@ -380,35 +436,6 @@ class _IndividualStudentAttendanceViewState
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: Colors.red,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Card(
-                              color: _getAttendanceColor(
-                                percentage,
-                              ).withOpacity(0.1),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      '${percentage.toStringAsFixed(1)}%',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: _getAttendanceColor(percentage),
-                                      ),
-                                    ),
-                                    Text(
-                                      'Attendance',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: _getAttendanceColor(percentage),
                                       ),
                                     ),
                                   ],
@@ -499,21 +526,7 @@ class _IndividualStudentAttendanceViewState
                                           color: Colors.grey[600],
                                         ),
                                       ),
-                                    Text(
-                                      'Marked by: ${record.createdBy}',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
                                   ],
-                                ),
-                                trailing: Text(
-                                  '${record.date.hour.toString().padLeft(2, '0')}:${record.date.minute.toString().padLeft(2, '0')}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
                                 ),
                               ),
                             );

@@ -158,7 +158,7 @@ class _EditClassViewState extends State<EditClassView> {
                           labelText: 'Monthly Fee',
                           hintText: 'e.g., 1500, 2000',
                           border: OutlineInputBorder(),
-                          prefixText: '₹ ',
+                          prefixText: 'Rs. ',
                         ),
                         keyboardType: TextInputType.number,
                         validator: (value) {

@@ -114,211 +114,403 @@ class _TeacherViewState extends State<TeacherView> {
           color: const Color(0xFF4CAF50),
           child: CustomScrollView(
             slivers: [
-              // Modern App Bar with consistent green theme
-              UIUtils.createSliverAppBar(
-                title: 'Teacher Dashboard',
-                actions: [
-                  Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: UIUtils.mediumRadius,
+              // Beautiful Custom App Bar
+              SliverAppBar(
+                expandedHeight: 100,
+                floating: false,
+                pinned: true,
+                elevation: 0,
+                backgroundColor: Colors.transparent,
+                flexibleSpace: Container(
+                  decoration: const BoxDecoration(
+                    gradient: UIUtils.primaryGradient,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(25),
+                      bottomRight: Radius.circular(25),
                     ),
-                    child: PopupMenuButton<MenuAction>(
-                      icon: const Icon(Icons.more_vert, color: Colors.white),
-                      onSelected: (value) async {
-                        switch (value) {
-                          case MenuAction.logout:
-                            final shouldLogout = await showLogoutDialog(
-                              context,
-                            );
-                            if (shouldLogout) {
-                              await AuthService.firebase().logOut();
-                            }
-                            break;
-                        }
-                      },
-                      itemBuilder: (context) {
-                        return const [
-                          PopupMenuItem<MenuAction>(
-                            value: MenuAction.logout,
-                            child: Row(
-                              children: [
-                                Icon(Icons.logout, color: Colors.red),
-                                SizedBox(width: 8),
-                                Text('Logout'),
-                              ],
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 15,
+                        offset: Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: FlexibleSpaceBar(
+                    title: null,
+                    background: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.dashboard_customize,
+                                color: Colors.white,
+                                size: 24,
+                              ),
                             ),
-                          ),
-                        ];
-                      },
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text(
+                                    'Teacher Dashboard',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (_currentTeacher != null)
+                                    Text(
+                                      'Hello, ${_currentTeacher!.name.split(' ').first}!',
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.9),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: PopupMenuButton<MenuAction>(
+                                icon: const Icon(
+                                  Icons.more_vert,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                onSelected: (value) async {
+                                  switch (value) {
+                                    case MenuAction.logout:
+                                      final shouldLogout =
+                                          await showLogoutDialog(context);
+                                      if (shouldLogout) {
+                                        await AuthService.firebase().logOut();
+                                      }
+                                      break;
+                                  }
+                                },
+                                itemBuilder: (context) {
+                                  return const [
+                                    PopupMenuItem<MenuAction>(
+                                      value: MenuAction.logout,
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.logout, color: Colors.red),
+                                          SizedBox(width: 8),
+                                          Text('Logout'),
+                                        ],
+                                      ),
+                                    ),
+                                  ];
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
 
-              // Welcome Section with real teacher info
+              // Welcome Section with enhanced design
               SliverToBoxAdapter(
-                child: UIUtils.createGradientContainer(
-                  margin: const EdgeInsets.all(16),
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   padding: const EdgeInsets.all(20),
-                  gradient: UIUtils.lightGradient,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Colors.white, Colors.blue.shade50],
+                    ),
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          gradient: UIUtils.primaryGradient,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: UIUtils.primaryGreen.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.auto_awesome,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _isLoading
+                                  ? 'Setting up your workspace...'
+                                  : 'Ready to teach today?',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _assignedClasses.isEmpty
+                                  ? 'No classes assigned yet'
+                                  : '${_assignedClasses.length} classes awaiting your guidance',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[600],
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Enhanced Action Cards Section
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: UIUtils.primaryGreen.withOpacity(0.1),
-                              borderRadius: UIUtils.mediumRadius,
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(
-                              Icons.school,
+                            child: Icon(
+                              Icons.flash_on,
                               color: UIUtils.primaryGreen,
-                              size: 24,
+                              size: 20,
                             ),
                           ),
-                          UIUtils.mediumHorizontalSpacing,
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Quick Actions',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Main Action Card - Enhanced Design
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            UIUtils.primaryGreen,
+                            UIUtils.primaryGreen.withOpacity(0.8),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: UIUtils.primaryGreen.withOpacity(0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const TeacherClassManagementView(),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(18),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Row(
                               children: [
-                                Text(
-                                  _currentTeacher != null
-                                      ? 'Welcome back, ${_currentTeacher!.name}!'
-                                      : 'Welcome Back!',
-                                  style: UIUtils.subheadingStyle,
+                                Container(
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: const Icon(
+                                    Icons.fact_check,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
                                 ),
-                                Text(
-                                  _isLoading
-                                      ? 'Loading your dashboard...'
-                                      : 'Ready to manage your classes?',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey,
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text(
+                                        'Class & Attendance Management',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Manage classes, mark attendance, and view detailed reports',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.white.withOpacity(0.9),
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.white,
+                                    size: 14,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Action Cards Section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Quick Actions',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Action Cards List
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    _buildModernActionCard(
-                      context,
-                      title: 'Manage Classes',
-                      subtitle:
-                          'View classes, mark attendance, and manage students',
-                      icon: Icons.school,
-                      color: Colors.blue,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const TeacherClassManagementView(),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    _buildModernActionCard(
-                      context,
-                      title: 'Attendance Reports',
-                      subtitle:
-                          'View detailed attendance reports and analytics',
-                      icon: Icons.analytics_outlined,
-                      color: Colors.purple,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const TeacherClassManagementView(),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    _buildModernActionCard(
-                      context,
-                      title: 'Profile Settings',
-                      subtitle: 'Update your profile and preferences',
-                      icon: Icons.person_outline,
-                      color: Colors.orange,
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Profile management coming soon!'),
-                            backgroundColor: Colors.orange,
-                          ),
-                        );
-                      },
                     ),
                   ]),
                 ),
               ),
 
-              // Today's Summary Section with real data
+              // Enhanced Today's Summary Section
               SliverToBoxAdapter(
                 child: Container(
                   margin: const EdgeInsets.all(16),
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Colors.white, Colors.grey.shade50],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        spreadRadius: 1,
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 15,
+                        spreadRadius: 2,
                       ),
                     ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Today\'s Summary',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              gradient: UIUtils.primaryGradient,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.today,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Today\'s Overview',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       _isLoading
                           ? _buildLoadingStats()
                           : _assignedClasses.isEmpty
@@ -339,7 +531,7 @@ class _TeacherViewState extends State<TeacherView> {
                                     'Students',
                                     '${_todayStats['totalStudents'] ?? 0}',
                                     Icons.people,
-                                    Colors.green,
+                                    UIUtils.primaryGreen,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -359,65 +551,6 @@ class _TeacherViewState extends State<TeacherView> {
               ),
 
               const SliverToBoxAdapter(child: SizedBox(height: 20)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildModernActionCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      elevation: 3,
-      shadowColor: color.withOpacity(0.3),
-      shape: RoundedRectangleBorder(borderRadius: UIUtils.largeRadius),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: UIUtils.largeRadius,
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: UIUtils.gradientDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white, color.withOpacity(0.03)],
-            ),
-            borderRadius: UIUtils.largeRadius,
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: UIUtils.mediumRadius,
-                ),
-                child: Icon(icon, size: 24, color: color),
-              ),
-              UIUtils.mediumHorizontalSpacing,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: UIUtils.bodyStyle.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    UIUtils.smallVerticalSpacing,
-                    Text(subtitle, style: UIUtils.captionStyle),
-                  ],
-                ),
-              ),
-              Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
             ],
           ),
         ),
@@ -508,25 +641,51 @@ class _TeacherViewState extends State<TeacherView> {
     Color color,
   ) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(height: 12),
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: color,
             ),
           ),
-          Text(title, style: TextStyle(fontSize: 10, color: Colors.grey[600])),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
