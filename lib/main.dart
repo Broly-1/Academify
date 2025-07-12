@@ -8,7 +8,6 @@ import 'package:tuition_app/services/teacher_service.dart';
 import 'package:tuition_app/views/login_view.dart';
 import 'package:tuition_app/views/owner/dashboard.dart';
 import 'package:tuition_app/views/teacher/dashboard.dart';
-
 import 'constants/routes.dart';
 
 void main() async {
