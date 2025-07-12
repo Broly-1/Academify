@@ -2,12 +2,12 @@
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:tuition_app/firebase_options.dart';
-import 'package:tuition_app/services/auth/auth_service.dart';
-import 'package:tuition_app/services/auth/auth_exceptions.dart';
-import 'package:tuition_app/utils/ui_utils.dart';
-import 'package:tuition_app/utils/form_utils.dart';
-import 'package:tuition_app/utils/service_utils.dart';
+import 'package:academify/firebase_options.dart';
+import 'package:academify/services/auth/auth_service.dart';
+import 'package:academify/services/auth/auth_exceptions.dart';
+import 'package:academify/utils/ui_utils.dart';
+import 'package:academify/utils/form_utils.dart';
+import 'package:academify/utils/service_utils.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});

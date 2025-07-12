@@ -1,14 +1,14 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:tuition_app/models/student.dart';
-import 'package:tuition_app/models/teacher.dart';
-import 'package:tuition_app/models/class_model.dart';
-import 'package:tuition_app/models/payment.dart';
-import 'package:tuition_app/services/student_service.dart';
-import 'package:tuition_app/services/teacher_service.dart';
-import 'package:tuition_app/services/class_service.dart';
-import 'package:tuition_app/services/payment_service.dart';
+import 'package:academify/models/student.dart';
+import 'package:academify/models/teacher.dart';
+import 'package:academify/models/class_model.dart';
+import 'package:academify/models/payment.dart';
+import 'package:academify/services/student_service.dart';
+import 'package:academify/services/teacher_service.dart';
+import 'package:academify/services/class_service.dart';
+import 'package:academify/services/payment_service.dart';
 
 class AcademyStatsView extends StatefulWidget {
   const AcademyStatsView({super.key});

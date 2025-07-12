@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tuition_app/models/class_model.dart';
-import 'package:tuition_app/services/attendance_service.dart';
+import 'package:academify/models/class_model.dart';
+import 'package:academify/services/attendance_service.dart';
 
 class ClassService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;

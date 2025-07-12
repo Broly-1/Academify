@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:tuition_app/models/class_model.dart';
-import 'package:tuition_app/models/student.dart';
-import 'package:tuition_app/models/teacher.dart';
-import 'package:tuition_app/services/student_service.dart';
-import 'package:tuition_app/services/attendance_service.dart';
-import 'package:tuition_app/services/teacher_service.dart';
-import 'package:tuition_app/services/pdf_service.dart';
-import 'package:tuition_app/utils/ui_utils.dart';
-import 'package:tuition_app/utils/service_utils.dart';
+import 'package:academify/models/class_model.dart';
+import 'package:academify/models/student.dart';
+import 'package:academify/models/teacher.dart';
+import 'package:academify/services/student_service.dart';
+import 'package:academify/services/attendance_service.dart';
+import 'package:academify/services/teacher_service.dart';
+import 'package:academify/services/pdf_service.dart';
+import 'package:academify/utils/ui_utils.dart';
+import 'package:academify/utils/service_utils.dart';
 
 class ViewAttendanceReportsView extends StatefulWidget {
   final ClassModel classModel;

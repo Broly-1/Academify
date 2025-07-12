@@ -2,20 +2,23 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:tuition_app/services/auth/auth_service.dart';
-import 'package:tuition_app/services/auth/auth_user.dart';
-import 'package:tuition_app/services/teacher_service.dart';
-import 'package:tuition_app/views/login_view.dart';
-import 'package:tuition_app/views/owner/dashboard.dart';
-import 'package:tuition_app/views/teacher/dashboard.dart';
+import 'firebase_options.dart'; // Add this import
+import 'package:academify/services/auth/auth_service.dart';
+import 'package:academify/services/auth/auth_user.dart';
+import 'package:academify/services/teacher_service.dart';
+import 'package:academify/views/login_view.dart';
+import 'package:academify/views/owner/dashboard.dart';
+import 'package:academify/views/teacher/dashboard.dart';
 import 'constants/routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform, // Update this line
+  );
   runApp(
     MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Academify Tuition Center', // Updated app title
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:tuition_app/models/class_model.dart';
-import 'package:tuition_app/models/student.dart';
-import 'package:tuition_app/models/payment.dart';
-import 'package:tuition_app/services/payment_service.dart';
-import 'package:tuition_app/services/pdf_service.dart';
-import 'package:tuition_app/services/class_service.dart';
-import 'package:tuition_app/services/student_service.dart';
+import 'package:academify/models/class_model.dart';
+import 'package:academify/models/student.dart';
+import 'package:academify/models/payment.dart';
+import 'package:academify/services/payment_service.dart';
+import 'package:academify/services/pdf_service.dart';
+import 'package:academify/services/class_service.dart';
+import 'package:academify/services/student_service.dart';
 
 class PaymentManagementView extends StatefulWidget {
   const PaymentManagementView({super.key});

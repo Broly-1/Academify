@@ -1,13 +1,12 @@
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:printing/printing.dart';
-import 'package:tuition_app/models/student.dart';
-import 'package:tuition_app/models/class_model.dart';
-import 'package:tuition_app/models/attendance.dart';
-import 'package:tuition_app/models/payment.dart';
-import 'package:tuition_app/models/teacher.dart';
+import 'package:academify/models/student.dart';
+import 'package:academify/models/class_model.dart';
+import 'package:academify/models/attendance.dart';
+import 'package:academify/models/payment.dart';
+import 'package:academify/models/teacher.dart';
 
 class PDFService {
   // Academy branding constants
@@ -381,10 +380,6 @@ class PDFService {
 
     final pageWidth = page.getClientSize().width;
     final contentWidth = pageWidth - 100; // 50 margin on each side
-    final leftColumnX = 60.0;
-    final rightColumnX = leftColumnX + (contentWidth / 2);
-    final columnWidth =
-        (contentWidth / 2) - 20; // 20 for spacing between columns
 
     // Class Information Section - Clean design
     yPosition = _drawSectionHeader(
@@ -394,63 +389,86 @@ class PDFService {
       pageWidth,
     );
 
-    // Class details in clean layout
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
+    // Create a clean information card
+    final infoCardRect = Rect.fromLTWH(50, yPosition, contentWidth, 100);
+    graphics.drawRectangle(
+      brush: PdfSolidBrush(PdfColor(248, 249, 250)),
+      pen: PdfPen(_borderColor, width: 1),
+      bounds: infoCardRect,
+    );
+
+    yPosition += 15;
+
+    // First row: Class and Academic Year
+    graphics.drawString(
       'Class:',
+      _subHeaderFont,
+      bounds: Rect.fromLTWH(70, yPosition, 100, 15),
+      brush: PdfSolidBrush(_primaryColor),
+    );
+    graphics.drawString(
       '${classModel.grade} ${classModel.section}',
-      leftColumnX,
-      yPosition,
-      maxWidth: columnWidth,
-    );
-    _drawDetailRow(
-      graphics,
       _bodyFont,
-      _subHeaderFont,
+      bounds: Rect.fromLTWH(170, yPosition, 150, 15),
+      brush: PdfSolidBrush(PdfColor(52, 58, 64)),
+    );
+
+    graphics.drawString(
       'Academic Year:',
+      _subHeaderFont,
+      bounds: Rect.fromLTWH(320, yPosition, 100, 15),
+      brush: PdfSolidBrush(_primaryColor),
+    );
+    graphics.drawString(
       classModel.year,
-      rightColumnX,
-      yPosition,
-      maxWidth: columnWidth,
+      _bodyFont,
+      bounds: Rect.fromLTWH(420, yPosition, 100, 15),
+      brush: PdfSolidBrush(PdfColor(52, 58, 64)),
     );
     yPosition += 25;
 
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
+    // Second row: Report Period
+    graphics.drawString(
       'Report Period:',
-      '${startDate.day}/${startDate.month}/${startDate.year} to ${endDate.day}/${endDate.month}/${endDate.year}',
-      leftColumnX,
-      yPosition,
-      maxWidth: columnWidth,
-    );
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
       _subHeaderFont,
-      'Monthly Fee: ',
+      bounds: Rect.fromLTWH(70, yPosition, 100, 15),
+      brush: PdfSolidBrush(_primaryColor),
+    );
+    graphics.drawString(
+      '${startDate.day}/${startDate.month}/${startDate.year} to ${endDate.day}/${endDate.month}/${endDate.year}',
+      _bodyFont,
+      bounds: Rect.fromLTWH(170, yPosition, 200, 15),
+      brush: PdfSolidBrush(PdfColor(52, 58, 64)),
+    );
+
+    graphics.drawString(
+      'Monthly Fee:',
+      _subHeaderFont,
+      bounds: Rect.fromLTWH(380, yPosition, 80, 15),
+      brush: PdfSolidBrush(_primaryColor),
+    );
+    graphics.drawString(
       'Rs. ${classModel.monthlyFee.toStringAsFixed(2)}',
-      rightColumnX,
-      yPosition,
-      maxWidth: columnWidth,
+      _bodyFont,
+      bounds: Rect.fromLTWH(460, yPosition, 80, 15),
+      brush: PdfSolidBrush(PdfColor(52, 58, 64)),
     );
     yPosition += 25;
 
-    // Teacher information
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
+    // Third row: Teacher
+    graphics.drawString(
       'Teacher:',
-      teacher?.name ?? 'Not Assigned',
-      leftColumnX,
-      yPosition,
-      maxWidth: columnWidth,
+      _subHeaderFont,
+      bounds: Rect.fromLTWH(70, yPosition, 100, 15),
+      brush: PdfSolidBrush(_primaryColor),
     );
-    yPosition += 40;
+    graphics.drawString(
+      teacher?.name ?? 'Not Assigned',
+      _bodyFont,
+      bounds: Rect.fromLTWH(170, yPosition, 200, 15),
+      brush: PdfSolidBrush(PdfColor(52, 58, 64)),
+    );
+    yPosition += 50; // Add more space after the info card
 
     // Beautiful attendance table
     yPosition = _drawAttendanceTable(
@@ -504,33 +522,42 @@ class PDFService {
     );
 
     final totalDays = endDate.difference(startDate).inDays + 1;
-    // Conservative column widths that definitely fit within content width (495)
-    final double nameWidth = contentWidth * 0.35; // ~173
-    final double daysWidth = contentWidth * 0.25; // ~124
+
+    // Better balanced column widths that fit within content width
+    final double nameWidth = contentWidth * 0.38; // ~188
+    final double daysWidth = contentWidth * 0.22; // ~109
     final double percentWidth = contentWidth * 0.22; // ~109
     final double statusWidth = contentWidth * 0.18; // ~89
 
-    // Beautiful table header with gradient-like effect
-    final tableHeaderRect = Rect.fromLTWH(50, yPosition, contentWidth, 30);
+    // Beautiful table header with proper alignment
+    final tableHeaderRect = Rect.fromLTWH(50, yPosition, contentWidth, 35);
     graphics.drawRectangle(
       brush: PdfSolidBrush(_primaryColor),
       bounds: tableHeaderRect,
     );
 
-    double xPos = 60;
+    // Header text with proper centering
+    final startX = 50.0;
     final headers = ['Student Name', 'Present Days', 'Attendance %', 'Status'];
     final widths = [nameWidth, daysWidth, percentWidth, statusWidth];
 
+    double currentX = startX;
     for (int i = 0; i < headers.length; i++) {
       graphics.drawString(
         headers[i],
         _subHeaderFont,
-        bounds: Rect.fromLTWH(xPos, yPosition + 8, widths[i] - 10, 15),
+        bounds: Rect.fromLTWH(
+          currentX + 10,
+          yPosition + 10,
+          widths[i] - 20,
+          15,
+        ),
         brush: PdfSolidBrush(PdfColor(255, 255, 255)),
+        format: PdfStringFormat(alignment: PdfTextAlignment.center),
       );
-      xPos += widths[i];
+      currentX += widths[i];
     }
-    yPosition += 35;
+    yPosition += 40;
 
     // Student data rows with beautiful styling
     for (int index = 0; index < students.length; index++) {
@@ -548,18 +575,19 @@ class PDFService {
           ? PdfColor(248, 249, 250)
           : PdfColor(255, 255, 255);
 
+      // Row background
       graphics.drawRectangle(
         brush: PdfSolidBrush(rowColor),
-        bounds: Rect.fromLTWH(50, yPosition, contentWidth, 25),
+        bounds: Rect.fromLTWH(50, yPosition, contentWidth, 30),
       );
 
       // Subtle row border
       graphics.drawRectangle(
         pen: PdfPen(PdfColor(233, 236, 239), width: 0.5),
-        bounds: Rect.fromLTWH(50, yPosition, contentWidth, 25),
+        bounds: Rect.fromLTWH(50, yPosition, contentWidth, 30),
       );
 
-      xPos = 60;
+      // Data with proper colors and alignment
       final percentageColor = attendancePercentage >= 75
           ? _successColor
           : attendancePercentage >= 50
@@ -572,29 +600,60 @@ class PDFService {
           ? 'Average'
           : 'Poor';
 
-      final rowData = [
+      currentX = startX;
+
+      // Student name (left aligned)
+      graphics.drawString(
         student.name,
+        _bodyFont,
+        bounds: Rect.fromLTWH(currentX + 10, yPosition + 8, nameWidth - 20, 15),
+        brush: PdfSolidBrush(PdfColor(52, 58, 64)),
+      );
+      currentX += nameWidth;
+
+      // Present days (center aligned)
+      graphics.drawString(
         '$presentDays / $totalDays',
+        _bodyFont,
+        bounds: Rect.fromLTWH(currentX + 10, yPosition + 8, daysWidth - 20, 15),
+        brush: PdfSolidBrush(PdfColor(52, 58, 64)),
+        format: PdfStringFormat(alignment: PdfTextAlignment.center),
+      );
+      currentX += daysWidth;
+
+      // Attendance percentage (center aligned, colored)
+      graphics.drawString(
         '${attendancePercentage.toStringAsFixed(1)}%',
+        _subHeaderFont,
+        bounds: Rect.fromLTWH(
+          currentX + 10,
+          yPosition + 8,
+          percentWidth - 20,
+          15,
+        ),
+        brush: PdfSolidBrush(percentageColor),
+        format: PdfStringFormat(alignment: PdfTextAlignment.center),
+      );
+      currentX += percentWidth;
+
+      // Status (center aligned, colored)
+      graphics.drawString(
         status,
-      ];
+        _subHeaderFont,
+        bounds: Rect.fromLTWH(
+          currentX + 10,
+          yPosition + 8,
+          statusWidth - 20,
+          15,
+        ),
+        brush: PdfSolidBrush(percentageColor),
+        format: PdfStringFormat(alignment: PdfTextAlignment.center),
+      );
 
-      for (int i = 0; i < rowData.length; i++) {
-        final color = i >= 2 ? percentageColor : PdfColor(52, 58, 64);
-        final font = i >= 2 ? _subHeaderFont : _bodyFont;
-
-        graphics.drawString(
-          rowData[i],
-          font,
-          bounds: Rect.fromLTWH(xPos, yPosition + 6, widths[i] - 10, 15),
-          brush: PdfSolidBrush(color),
-        );
-        xPos += widths[i];
-      }
-      yPosition += 25;
+      yPosition += 30;
     }
 
-    return yPosition + 10;
+    return yPosition + 20;
   }
 
   // Beautiful attendance summary with modern design
@@ -606,9 +665,6 @@ class PDFService {
   ) {
     final pageWidth = 595.0;
     final contentWidth = pageWidth - 100;
-    final leftColumnX = 60.0;
-    final rightColumnX = leftColumnX + (contentWidth / 2);
-    final columnWidth = (contentWidth / 2) - 20;
 
     yPosition = _drawSectionHeader(
       graphics,
@@ -636,47 +692,66 @@ class PDFService {
         ? totalAttendanceSum / totalStudents
         : 0;
 
-    // Beautiful summary cards
-    final cardHeight = 60.0;
-    final cardSpacing = 20.0;
+    // Overview card with proper bounds
+    final cardHeight = 80.0;
+    final cardRect = Rect.fromLTWH(50, yPosition, contentWidth, cardHeight);
 
-    // Overview card with gradient-like effect
+    // Draw card background
     graphics.drawRectangle(
       brush: PdfSolidBrush(PdfColor(248, 249, 250)),
       pen: PdfPen(_primaryColor, width: 1.5),
-      bounds: Rect.fromLTWH(50, yPosition, contentWidth, cardHeight),
+      bounds: cardRect,
     );
 
+    // Card title
     graphics.drawString(
       'CLASS OVERVIEW',
       _subHeaderFont,
-      bounds: Rect.fromLTWH(60, yPosition + 10, contentWidth - 20, 15),
+      bounds: Rect.fromLTWH(60, yPosition + 15, contentWidth - 20, 15),
       brush: PdfSolidBrush(_primaryColor),
     );
 
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
+    // Summary content with proper spacing and alignment
+    final summaryYPos = yPosition + 35;
+    final labelWidth = 120.0;
+    final valueStartX = 180.0;
+
+    // Total Students
+    graphics.drawString(
       'Total Students:',
-      totalStudents.toString(),
-      leftColumnX,
-      yPosition + 30,
-      maxWidth: columnWidth,
-    );
-    _drawDetailRow(
-      graphics,
       _bodyFont,
+      bounds: Rect.fromLTWH(60, summaryYPos, labelWidth, 15),
+      brush: PdfSolidBrush(PdfColor(52, 58, 64)),
+    );
+    graphics.drawString(
+      totalStudents.toString(),
       _subHeaderFont,
-      'Overall Average:',
-      '${overallAverage.toStringAsFixed(1)}%',
-      rightColumnX,
-      yPosition + 30,
-      maxWidth: columnWidth,
+      bounds: Rect.fromLTWH(valueStartX, summaryYPos, 100, 15),
+      brush: PdfSolidBrush(_primaryColor),
     );
 
-    yPosition += cardHeight + cardSpacing;
+    // Overall Average
+    graphics.drawString(
+      'Overall Average:',
+      _bodyFont,
+      bounds: Rect.fromLTWH(300, summaryYPos, labelWidth, 15),
+      brush: PdfSolidBrush(PdfColor(52, 58, 64)),
+    );
 
+    final averageColor = overallAverage >= 75
+        ? _successColor
+        : overallAverage >= 50
+        ? PdfColor(255, 152, 0)
+        : _errorColor;
+
+    graphics.drawString(
+      '${overallAverage.toStringAsFixed(1)}%',
+      _subHeaderFont,
+      bounds: Rect.fromLTWH(420, summaryYPos, 100, 15),
+      brush: PdfSolidBrush(averageColor),
+    );
+
+    yPosition += cardHeight + 20;
     return yPosition;
   }
 

@@ -1,12 +1,12 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:tuition_app/models/teacher.dart';
-import 'package:tuition_app/services/teacher_service.dart';
-import 'package:tuition_app/views/owner/create_teacher_view.dart';
-import 'package:tuition_app/views/owner/edit_teacher_view.dart';
-import 'package:tuition_app/utils/ui_utils.dart';
-import 'package:tuition_app/utils/service_utils.dart';
+import 'package:academify/models/teacher.dart';
+import 'package:academify/services/teacher_service.dart';
+import 'package:academify/views/owner/create_teacher_view.dart';
+import 'package:academify/views/owner/edit_teacher_view.dart';
+import 'package:academify/utils/ui_utils.dart';
+import 'package:academify/utils/service_utils.dart';
 
 class TeacherManagementView extends StatefulWidget {
   const TeacherManagementView({super.key});

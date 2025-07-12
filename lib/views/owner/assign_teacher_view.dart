@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:tuition_app/models/class_model.dart';
-import 'package:tuition_app/models/teacher.dart';
-import 'package:tuition_app/services/class_service.dart';
-import 'package:tuition_app/services/teacher_service.dart';
+import 'package:academify/models/class_model.dart';
+import 'package:academify/models/teacher.dart';
+import 'package:academify/services/class_service.dart';
+import 'package:academify/services/teacher_service.dart';
 
 class AssignTeacherView extends StatefulWidget {
   final ClassModel classModel;

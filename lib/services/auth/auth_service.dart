@@ -1,6 +1,6 @@
-import 'package:tuition_app/services/auth/auth_user.dart';
-import 'package:tuition_app/services/auth/auth_provider.dart';
-import 'package:tuition_app/services/auth/firebase_auth_provider.dart';
+import 'package:academify/services/auth/auth_user.dart';
+import 'package:academify/services/auth/auth_provider.dart';
+import 'package:academify/services/auth/firebase_auth_provider.dart';
 
 class AuthService implements AuthProvider {
   final AuthProvider provider;

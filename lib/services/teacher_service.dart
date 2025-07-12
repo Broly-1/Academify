@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tuition_app/models/teacher.dart';
+import 'package:academify/models/teacher.dart';
 
 class TeacherService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;

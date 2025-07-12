@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:tuition_app/services/auth/auth_service.dart';
-import 'package:tuition_app/services/teacher_service.dart';
-import 'package:tuition_app/services/class_service.dart';
-import 'package:tuition_app/services/attendance_service.dart';
-import 'package:tuition_app/models/teacher.dart';
-import 'package:tuition_app/models/class_model.dart';
-import 'package:tuition_app/enums/menu_action.dart';
-import 'package:tuition_app/views/teacher/teacher_class_management_view.dart';
-import 'package:tuition_app/utils/ui_utils.dart';
+import 'package:academify/services/auth/auth_service.dart';
+import 'package:academify/services/teacher_service.dart';
+import 'package:academify/services/class_service.dart';
+import 'package:academify/services/attendance_service.dart';
+import 'package:academify/models/teacher.dart';
+import 'package:academify/models/class_model.dart';
+import 'package:academify/enums/menu_action.dart';
+import 'package:academify/views/teacher/teacher_class_management_view.dart';
+import 'package:academify/utils/ui_utils.dart';
 
 class TeacherView extends StatefulWidget {
   const TeacherView({super.key});

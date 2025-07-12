@@ -1,14 +1,14 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:tuition_app/services/auth/auth_service.dart';
-import 'package:tuition_app/enums/menu_action.dart';
-import 'package:tuition_app/views/owner/class_management_view.dart';
-import 'package:tuition_app/views/owner/student_management_view.dart';
-import 'package:tuition_app/views/owner/teacher_management_view.dart';
-import 'package:tuition_app/views/owner/owner_attendance_management_view.dart';
-import 'package:tuition_app/views/owner/payment_management_view.dart';
-import 'package:tuition_app/views/owner/academy_stats_view.dart';
+import 'package:academify/services/auth/auth_service.dart';
+import 'package:academify/enums/menu_action.dart';
+import 'package:academify/views/owner/class_management_view.dart';
+import 'package:academify/views/owner/student_management_view.dart';
+import 'package:academify/views/owner/teacher_management_view.dart';
+import 'package:academify/views/owner/owner_attendance_management_view.dart';
+import 'package:academify/views/owner/payment_management_view.dart';
+import 'package:academify/views/owner/academy_stats_view.dart';
 
 class OwnerView extends StatefulWidget {
   const OwnerView({super.key});

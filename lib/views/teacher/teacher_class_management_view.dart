@@ -1,15 +1,15 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:tuition_app/models/class_model.dart';
-import 'package:tuition_app/models/teacher.dart';
-import 'package:tuition_app/services/class_service.dart';
-import 'package:tuition_app/services/teacher_service.dart';
-import 'package:tuition_app/services/auth/auth_service.dart';
-import 'package:tuition_app/views/teacher/mark_attendance_view.dart';
-import 'package:tuition_app/views/teacher/class_reports_view.dart';
-import 'package:tuition_app/utils/ui_utils.dart';
-import 'package:tuition_app/utils/service_utils.dart';
+import 'package:academify/models/class_model.dart';
+import 'package:academify/models/teacher.dart';
+import 'package:academify/services/class_service.dart';
+import 'package:academify/services/teacher_service.dart';
+import 'package:academify/services/auth/auth_service.dart';
+import 'package:academify/views/teacher/mark_attendance_view.dart';
+import 'package:academify/views/teacher/class_reports_view.dart';
+import 'package:academify/utils/ui_utils.dart';
+import 'package:academify/utils/service_utils.dart';
 
 class TeacherClassManagementView extends StatefulWidget {
   const TeacherClassManagementView({super.key});
@@ -123,6 +123,14 @@ class _TeacherClassManagementViewState
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(

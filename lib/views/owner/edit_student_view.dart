@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tuition_app/models/student.dart';
-import 'package:tuition_app/services/student_service.dart';
+import 'package:academify/models/student.dart';
+import 'package:academify/services/student_service.dart';
 
 class EditStudentView extends StatefulWidget {
   final Student student;

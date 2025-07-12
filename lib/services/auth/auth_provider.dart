@@ -1,4 +1,4 @@
-import 'package:tuition_app/services/auth/auth_user.dart';
+import 'package:academify/services/auth/auth_user.dart';
 
 abstract class AuthProvider {
   Future<void> initialize();

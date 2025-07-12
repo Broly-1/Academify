@@ -1,8 +1,8 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:tuition_app/models/teacher.dart';
-import 'package:tuition_app/services/teacher_service.dart';
+import 'package:academify/models/teacher.dart';
+import 'package:academify/services/teacher_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class CreateTeacherView extends StatefulWidget {

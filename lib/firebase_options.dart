@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -36,10 +33,7 @@ class DefaultFirebaseOptions {
           'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -59,4 +53,25 @@ class DefaultFirebaseOptions {
     projectId: 'academify-39811',
     storageBucket: 'academify-39811.firebasestorage.app',
   );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyDC44sOT6GC84nXpK8mYIMSKqMkJzHlBnU',
+    appId: '1:485865753530:web:4a9006bfaa462606bbeb83',
+    messagingSenderId: '485865753530',
+    projectId: 'academify-39811',
+    authDomain: 'academify-39811.firebaseapp.com',
+    storageBucket: 'academify-39811.firebasestorage.app',
+    measurementId: 'G-8HZ2N72Y3H',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyDC44sOT6GC84nXpK8mYIMSKqMkJzHlBnU',
+    appId: '1:485865753530:web:9a4bf60705b50269bbeb83',
+    messagingSenderId: '485865753530',
+    projectId: 'academify-39811',
+    authDomain: 'academify-39811.firebaseapp.com',
+    storageBucket: 'academify-39811.firebasestorage.app',
+    measurementId: 'G-HK8JY7Z2VK',
+  );
+
 }

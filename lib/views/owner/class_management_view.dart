@@ -1,17 +1,17 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:tuition_app/models/class_model.dart';
-import 'package:tuition_app/models/teacher.dart';
-import 'package:tuition_app/services/class_service.dart';
-import 'package:tuition_app/services/teacher_service.dart';
-import 'package:tuition_app/views/owner/create_class_view.dart';
-import 'package:tuition_app/views/owner/edit_class_view.dart';
-import 'package:tuition_app/views/owner/assign_students_view.dart';
-import 'package:tuition_app/views/owner/assign_teacher_view.dart';
-import 'package:tuition_app/services/pdf_service.dart';
-import 'package:tuition_app/services/attendance_service.dart';
-import 'package:tuition_app/services/student_service.dart';
+import 'package:academify/models/class_model.dart';
+import 'package:academify/models/teacher.dart';
+import 'package:academify/services/class_service.dart';
+import 'package:academify/services/teacher_service.dart';
+import 'package:academify/views/owner/create_class_view.dart';
+import 'package:academify/views/owner/edit_class_view.dart';
+import 'package:academify/views/owner/assign_students_view.dart';
+import 'package:academify/views/owner/assign_teacher_view.dart';
+import 'package:academify/services/pdf_service.dart';
+import 'package:academify/services/attendance_service.dart';
+import 'package:academify/services/student_service.dart';
 
 class ClassManagementView extends StatelessWidget {
   const ClassManagementView({super.key});
