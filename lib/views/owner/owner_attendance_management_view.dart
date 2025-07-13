@@ -794,7 +794,7 @@ class _OwnerAttendanceManagementViewState
                                                                   const EdgeInsets.symmetric(
                                                                     horizontal:
                                                                         12,
-                                                                    vertical: 6,
+                                                                    vertical: 4,
                                                                   ),
                                                               decoration: BoxDecoration(
                                                                 color:
@@ -811,12 +811,15 @@ class _OwnerAttendanceManagementViewState
                                                                 mainAxisSize:
                                                                     MainAxisSize
                                                                         .min,
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .center,
                                                                 children: [
                                                                   Text(
                                                                     '${percentage.toStringAsFixed(1)}%',
                                                                     style: TextStyle(
                                                                       fontSize:
-                                                                          16,
+                                                                          14,
                                                                       fontWeight:
                                                                           FontWeight
                                                                               .bold,
@@ -829,7 +832,7 @@ class _OwnerAttendanceManagementViewState
                                                                     '$presentDays/$totalDays',
                                                                     style: TextStyle(
                                                                       fontSize:
-                                                                          10,
+                                                                          9,
                                                                       color: Colors
                                                                           .grey[600],
                                                                     ),

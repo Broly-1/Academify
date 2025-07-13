@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart'; // Add this import
+import 'firebase_options.dart';
 import 'package:academify/services/auth/auth_service.dart';
 import 'package:academify/services/auth/auth_user.dart';
 import 'package:academify/services/teacher_service.dart';
@@ -13,12 +13,10 @@ import 'constants/routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // Update this line
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
     MaterialApp(
-      title: 'Academify Tuition Center', // Updated app title
+      title: 'Academify School Center',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(

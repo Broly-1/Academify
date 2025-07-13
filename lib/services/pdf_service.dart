@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:printing/printing.dart';
@@ -36,43 +35,37 @@ class PDFService {
   static PdfFont get _smallFont => PdfStandardFont(PdfFontFamily.helvetica, 8);
 
   // Enhanced Header with Academy Branding
-  static double _drawProfessionalHeader(
+  static Future<double> _drawProfessionalHeader(
     PdfGraphics graphics,
     PdfPage page,
     String documentTitle, {
     String? copyType,
-  }) {
+  }) async {
     final pageWidth = page.getClientSize().width;
     double yPosition = 40;
 
-    // Academy logo - You can replace this with your actual logo
-    // To use an image logo, follow these steps:
-    // 1. Add your logo image to assets/images/academy_logo.png
-    // 2. Update pubspec.yaml to include the asset
-    // 3. Use the commented code below:
+    // Academy logo - Load from assets
+    try {
+      final logoBytes = await rootBundle.load('assets/images/academy_logo.png');
+      final logoImage = PdfBitmap(logoBytes.buffer.asUint8List());
+      graphics.drawImage(logoImage, Rect.fromLTWH(50, yPosition, 60, 60));
+    } catch (e) {
+      // If logo loading fails, draw placeholder rectangle
+      final logoRect = Rect.fromLTWH(50, yPosition, 60, 60);
+      graphics.drawRectangle(
+        pen: PdfPen(_primaryColor, width: 2),
+        brush: PdfSolidBrush(PdfColor(25, 118, 210, 20)),
+        bounds: logoRect,
+      );
 
-    /*
-    // Load and display your academy logo from assets
-    final logoBytes = await rootBundle.load('assets/images/academy_logo.png');
-    final logoImage = PdfBitmap(logoBytes.buffer.asUint8List());
-    graphics.drawImage(logoImage, Rect.fromLTWH(50, yPosition, 60, 60));
-    */
-
-    // Current placeholder design (replace this when you add your logo)
-    final logoRect = Rect.fromLTWH(50, yPosition, 60, 60);
-    graphics.drawRectangle(
-      pen: PdfPen(_primaryColor, width: 2),
-      brush: PdfSolidBrush(PdfColor(25, 118, 210, 20)),
-      bounds: logoRect,
-    );
-
-    // Academy initial with professional styling
-    graphics.drawString(
-      'A',
-      PdfStandardFont(PdfFontFamily.helvetica, 36, style: PdfFontStyle.bold),
-      bounds: Rect.fromLTWH(65, yPosition + 15, 30, 30),
-      brush: PdfSolidBrush(_primaryColor),
-    );
+      // Academy initial with professional styling
+      graphics.drawString(
+        'A',
+        PdfStandardFont(PdfFontFamily.helvetica, 36, style: PdfFontStyle.bold),
+        bounds: Rect.fromLTWH(65, yPosition + 15, 30, 30),
+        brush: PdfSolidBrush(_primaryColor),
+      );
+    }
 
     // Academy name and details - centered in available space after logo
     final textStartX = 130.0;
@@ -369,7 +362,7 @@ class PDFService {
     final graphics = page.graphics;
 
     // Professional header
-    double yPosition = _drawProfessionalHeader(
+    double yPosition = await _drawProfessionalHeader(
       graphics,
       page,
       'Attendance Report',
@@ -776,7 +769,7 @@ class PDFService {
     final graphics = page.graphics;
 
     // Professional header
-    double yPosition = _drawProfessionalHeader(
+    double yPosition = await _drawProfessionalHeader(
       graphics,
       page,
       'Payment Receipt',
@@ -1062,7 +1055,7 @@ class PDFService {
     final graphics = page.graphics;
 
     // Professional header
-    double yPosition = _drawProfessionalHeader(
+    double yPosition = await _drawProfessionalHeader(
       graphics,
       page,
       'Student Report Card',
@@ -1257,7 +1250,7 @@ class PDFService {
       final graphics = page.graphics;
 
       // Draw beautiful receipt using the same styling as individual receipts
-      double yPosition = _drawProfessionalHeader(
+      double yPosition = await _drawProfessionalHeader(
         graphics,
         page,
         'Payment Receipt',
@@ -1554,7 +1547,11 @@ class PDFService {
       final graphics = page.graphics;
 
       // Professional header
-      double yPosition = _drawProfessionalHeader(graphics, page, 'Fee Challan');
+      double yPosition = await _drawProfessionalHeader(
+        graphics,
+        page,
+        'Fee Challan',
+      );
       yPosition += 30;
 
       final pageWidth = page.getClientSize().width;
