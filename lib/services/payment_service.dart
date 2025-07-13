@@ -29,7 +29,36 @@ class PaymentService {
       final defaultDueDate =
           dueDate ?? DateTime(year, _getMonthNumber(month) + 1, 5);
 
+      // First, check for existing unpaid payments and mark them as overdue
+      final existingPayments = await getClassPayments(
+        classId: classId,
+        month: month,
+        year: year,
+      );
+
       for (final student in students) {
+        // Check if student has existing unpaid payment
+        final existingPayment = existingPayments
+            .where((p) => p.studentId == student.id && !p.isPaid)
+            .firstOrNull;
+
+        if (existingPayment != null) {
+          // Mark existing unpaid payment as overdue by updating its notes
+          final overduePayment = existingPayment.copyWith(
+            notes:
+                (existingPayment.notes ?? '') +
+                (existingPayment.notes?.isNotEmpty == true ? '\n' : '') +
+                'OVERDUE: New challan created on ${now.day}/${now.month}/${now.year}',
+            updatedAt: now,
+          );
+
+          batch.update(
+            _firestore.collection(_collection).doc(existingPayment.id),
+            overduePayment.toMap(),
+          );
+        }
+
+        // Create new payment record
         final docRef = _firestore.collection(_collection).doc();
         final payment = Payment(
           id: docRef.id,
@@ -214,8 +243,87 @@ class PaymentService {
       return overduePayments;
     } catch (e) {
       // Return empty list instead of throwing exception to prevent UI crashes
-      print('Error getting overdue payments: $e');
+      // Error getting overdue payments: $e (logged silently)
       return [];
+    }
+  }
+
+  // Get overdue payments for a specific class
+  static Future<List<Payment>> getClassOverduePayments({
+    required String classId,
+    required String month,
+    required int year,
+  }) async {
+    try {
+      final payments = await getClassPayments(
+        classId: classId,
+        month: month,
+        year: year,
+      );
+
+      // Return payments that are overdue (unpaid and past due date)
+      return payments.where((payment) => payment.isOverdue).toList();
+    } catch (e) {
+      throw Exception('Failed to get overdue payments: $e');
+    }
+  }
+
+  // Get all overdue payments across all classes
+  static Future<List<Payment>> getAllOverduePayments() async {
+    try {
+      final now = DateTime.now();
+      final querySnapshot = await _firestore
+          .collection(_collection)
+          .where('isPaid', isEqualTo: false)
+          .get();
+
+      final payments = querySnapshot.docs
+          .map((doc) => Payment.fromMap(doc.data()))
+          .toList();
+
+      // Filter to only include overdue payments
+      return payments
+          .where((payment) => payment.dueDate.isBefore(now))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to get all overdue payments: $e');
+    }
+  }
+
+  // Mark overdue payment as paid (special handling)
+  static Future<void> markOverduePaymentAsPaid({
+    required String paymentId,
+    required String paymentMethod,
+    DateTime? paidDate,
+    String? notes,
+  }) async {
+    try {
+      final payment = await getPaymentById(paymentId);
+      if (payment == null) {
+        throw Exception('Payment not found');
+      }
+
+      final receiptNumber = payment.receiptNumber ?? _generateReceiptNumber();
+      final overdueNotes =
+          (payment.notes ?? '') +
+          (payment.notes?.isNotEmpty == true ? '\n' : '') +
+          'OVERDUE PAYMENT: Paid on ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}';
+
+      final updatedPayment = payment.copyWith(
+        isPaid: true,
+        paidDate: paidDate ?? DateTime.now(),
+        receiptNumber: receiptNumber,
+        paymentMethod: paymentMethod,
+        notes: notes ?? overdueNotes,
+        updatedAt: DateTime.now(),
+      );
+
+      await _firestore
+          .collection(_collection)
+          .doc(paymentId)
+          .update(updatedPayment.toMap());
+    } catch (e) {
+      throw Exception('Failed to mark overdue payment as paid: $e');
     }
   }
 

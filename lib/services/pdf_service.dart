@@ -10,7 +10,7 @@ import 'package:academify/models/teacher.dart';
 
 class PDFService {
   // Academy branding constants
-  static const String _academyName = 'ACADEMIFY TUITION CENTER';
+  static const String _academyName = 'ACADEMIFY SCHOOL';
   static const String _academyTagline = 'Excellence in Education';
   static const String _academyAddress = 'Lahore';
   static const String _academyContact =
@@ -95,7 +95,7 @@ class PDFService {
       _subHeaderFont,
       bounds: Rect.fromLTWH(
         textStartX,
-        yPosition + 25,
+        yPosition + 35,
         availableWidth * 0.7,
         15,
       ),
@@ -105,11 +105,11 @@ class PDFService {
     // Copy type indicator - properly positioned on the right
     if (copyType != null) {
       final copyTypeWidth = 120.0;
-      final copyTypeX = pageWidth - copyTypeWidth - 50; // 50 for right margin
+      final copyTypeX = 200.0; // 50 for right margin
       graphics.drawString(
         copyType.toUpperCase(),
         _headerFont,
-        bounds: Rect.fromLTWH(copyTypeX, yPosition + 15, copyTypeWidth, 20),
+        bounds: Rect.fromLTWH(copyTypeX, 10, copyTypeWidth, 20),
         brush: PdfSolidBrush(_accentColor),
         format: PdfStringFormat(alignment: PdfTextAlignment.center),
       );
@@ -416,13 +416,13 @@ class PDFService {
     graphics.drawString(
       'Academic Year:',
       _subHeaderFont,
-      bounds: Rect.fromLTWH(320, yPosition, 100, 15),
+      bounds: Rect.fromLTWH(290, yPosition, 100, 15),
       brush: PdfSolidBrush(_primaryColor),
     );
     graphics.drawString(
       classModel.year,
       _bodyFont,
-      bounds: Rect.fromLTWH(420, yPosition, 100, 15),
+      bounds: Rect.fromLTWH(385, yPosition, 100, 15),
       brush: PdfSolidBrush(PdfColor(52, 58, 64)),
     );
     yPosition += 25;
@@ -444,13 +444,13 @@ class PDFService {
     graphics.drawString(
       'Monthly Fee:',
       _subHeaderFont,
-      bounds: Rect.fromLTWH(380, yPosition, 80, 15),
+      bounds: Rect.fromLTWH(290, yPosition, 80, 15),
       brush: PdfSolidBrush(_primaryColor),
     );
     graphics.drawString(
       'Rs. ${classModel.monthlyFee.toStringAsFixed(2)}',
       _bodyFont,
-      bounds: Rect.fromLTWH(460, yPosition, 80, 15),
+      bounds: Rect.fromLTWH(375, yPosition, 80, 15),
       brush: PdfSolidBrush(PdfColor(52, 58, 64)),
     );
     yPosition += 25;
@@ -521,7 +521,9 @@ class PDFService {
       pageWidth,
     );
 
-    final totalDays = endDate.difference(startDate).inDays + 1;
+    // Get actual total days from attendance records (not date range)
+    final allDates = attendanceRecords.map((a) => a.date).toSet();
+    final totalDays = allDates.length;
 
     // Better balanced column widths that fit within content width
     final double nameWidth = contentWidth * 0.38; // ~188
@@ -529,19 +531,24 @@ class PDFService {
     final double percentWidth = contentWidth * 0.22; // ~109
     final double statusWidth = contentWidth * 0.18; // ~89
 
-    // Beautiful table header with proper alignment
-    final tableHeaderRect = Rect.fromLTWH(50, yPosition, contentWidth, 35);
+    // Beautiful table header with proper alignment - shifted more to the left
+    final tableStartX = 30.0; // Shifted 20 pixels to the left from 50
+    final tableHeaderRect = Rect.fromLTWH(
+      tableStartX,
+      yPosition,
+      contentWidth,
+      35,
+    );
     graphics.drawRectangle(
       brush: PdfSolidBrush(_primaryColor),
       bounds: tableHeaderRect,
     );
 
     // Header text with proper centering
-    final startX = 50.0;
     final headers = ['Student Name', 'Present Days', 'Attendance %', 'Status'];
     final widths = [nameWidth, daysWidth, percentWidth, statusWidth];
 
-    double currentX = startX;
+    double currentX = tableStartX;
     for (int i = 0; i < headers.length; i++) {
       graphics.drawString(
         headers[i],
@@ -575,16 +582,16 @@ class PDFService {
           ? PdfColor(248, 249, 250)
           : PdfColor(255, 255, 255);
 
-      // Row background
+      // Row background - shifted more to the left
       graphics.drawRectangle(
         brush: PdfSolidBrush(rowColor),
-        bounds: Rect.fromLTWH(50, yPosition, contentWidth, 30),
+        bounds: Rect.fromLTWH(tableStartX, yPosition, contentWidth, 30),
       );
 
-      // Subtle row border
+      // Subtle row border - shifted more to the left
       graphics.drawRectangle(
         pen: PdfPen(PdfColor(233, 236, 239), width: 0.5),
-        bounds: Rect.fromLTWH(50, yPosition, contentWidth, 30),
+        bounds: Rect.fromLTWH(tableStartX, yPosition, contentWidth, 30),
       );
 
       // Data with proper colors and alignment
@@ -600,7 +607,7 @@ class PDFService {
           ? 'Average'
           : 'Poor';
 
-      currentX = startX;
+      currentX = tableStartX;
 
       // Student name (left aligned)
       graphics.drawString(
@@ -673,8 +680,13 @@ class PDFService {
       pageWidth,
     );
 
-    // Calculate statistics efficiently
+    // Calculate statistics correctly
     final totalStudents = students.length;
+
+    // Get all unique dates from attendance records
+    final allDates = attendanceRecords.map((a) => a.date).toSet();
+    final totalDays = allDates.length;
+
     double totalAttendanceSum = 0;
 
     for (final student in students) {
@@ -682,7 +694,6 @@ class PDFService {
           .where((a) => a.studentId == student.id)
           .toList();
       final presentDays = studentAttendance.where((a) => a.isPresent).length;
-      final totalDays = attendanceRecords.map((a) => a.date).toSet().length;
       final percentage = totalDays > 0 ? (presentDays / totalDays) * 100 : 0;
 
       totalAttendanceSum += percentage;
@@ -694,7 +705,7 @@ class PDFService {
 
     // Overview card with proper bounds
     final cardHeight = 80.0;
-    final cardRect = Rect.fromLTWH(50, yPosition, contentWidth, cardHeight);
+    final cardRect = Rect.fromLTWH(50, yPosition, 440, cardHeight);
 
     // Draw card background
     graphics.drawRectangle(
@@ -771,7 +782,7 @@ class PDFService {
       'Payment Receipt',
       copyType: 'Student Copy',
     );
-    yPosition += 30;
+    yPosition += 5;
 
     final pageWidth = page.getClientSize().width;
     final contentWidth = pageWidth - 100;
@@ -869,14 +880,14 @@ class PDFService {
     graphics.drawString(
       'Student Name:',
       _subHeaderFont,
-      bounds: Rect.fromLTWH(leftColumnX, yPosition, columnWidth * 0.4, 15),
+      bounds: Rect.fromLTWH(leftColumnX, yPosition, columnWidth * 0.5, 15),
       brush: PdfSolidBrush(_primaryColor),
     );
     graphics.drawString(
       student.name,
       _bodyFont,
       bounds: Rect.fromLTWH(
-        leftColumnX + columnWidth * 0.4,
+        leftColumnX + columnWidth * 0.6,
         yPosition,
         columnWidth * 0.6,
         15,
@@ -887,14 +898,14 @@ class PDFService {
     graphics.drawString(
       'Academic Period:',
       _subHeaderFont,
-      bounds: Rect.fromLTWH(rightColumnX, yPosition, columnWidth * 0.5, 15),
+      bounds: Rect.fromLTWH(rightColumnX, yPosition, columnWidth * 0.6, 15),
       brush: PdfSolidBrush(_primaryColor),
     );
     graphics.drawString(
       '${payment.month} ${payment.year}',
       _bodyFont,
       bounds: Rect.fromLTWH(
-        rightColumnX + columnWidth * 0.5,
+        rightColumnX + columnWidth * 0.6,
         yPosition,
         columnWidth * 0.5,
         15,
@@ -907,7 +918,7 @@ class PDFService {
     graphics.drawString(
       'Payment Method:',
       _subHeaderFont,
-      bounds: Rect.fromLTWH(leftColumnX, yPosition, columnWidth * 0.4, 15),
+      bounds: Rect.fromLTWH(leftColumnX, yPosition, columnWidth * 0.6, 15),
       brush: PdfSolidBrush(_primaryColor),
     );
     final paymentMethod = payment.paymentMethod ?? 'Cash';
@@ -915,23 +926,22 @@ class PDFService {
       '💳 $paymentMethod',
       _bodyFont,
       bounds: Rect.fromLTWH(
-        leftColumnX + columnWidth * 0.4,
+        leftColumnX + columnWidth * 0.58,
         yPosition,
         columnWidth * 0.6,
         15,
       ),
       brush: PdfSolidBrush(PdfColor(52, 58, 64)),
     );
-    yPosition += 50;
+    yPosition += 75;
 
     // Enhanced amount display with premium styling
-    graphics.drawString(
+    yPosition = _drawSectionHeader(
+      graphics,
       'AMOUNT DETAILS',
-      _headerFont,
-      bounds: Rect.fromLTWH(50, yPosition, contentWidth, 20),
-      brush: PdfSolidBrush(_primaryColor),
+      yPosition,
+      page.getClientSize().width,
     );
-    yPosition += 30;
 
     // Premium amount card with clean styling
     final amountCardRect = Rect.fromLTWH(50, yPosition, contentWidth, 80);
@@ -985,16 +995,16 @@ class PDFService {
       );
 
       graphics.drawString(
-        'PAYMENT SUCCESSFULLY RECEIVED',
+        'PAYMENT SUCCESSFUL',
         PdfStandardFont(PdfFontFamily.helvetica, 16, style: PdfFontStyle.bold),
-        bounds: Rect.fromLTWH(100, yPosition + 15, contentWidth - 120, 20),
+        bounds: Rect.fromLTWH(160, yPosition + 10, contentWidth - 120, 20),
         brush: PdfSolidBrush(_successColor),
       );
 
       graphics.drawString(
         'This receipt is valid and authentic',
         _bodyFont,
-        bounds: Rect.fromLTWH(100, yPosition + 32, contentWidth - 120, 15),
+        bounds: Rect.fromLTWH(180, yPosition + 32, contentWidth - 120, 15),
         brush: PdfSolidBrush(_textSecondary),
       );
       yPosition += 70;
@@ -1523,258 +1533,6 @@ class PDFService {
 
   // Fee Challan Generation Methods
 
-  // Generate individual fee challan
-  static Future<Uint8List> generateFeeChallan({
-    required Student student,
-    required ClassModel classModel,
-    required String month,
-    required int year,
-    required double feeAmount,
-    String? dueDate,
-    double extraDues = 0.0,
-  }) async {
-    final document = PdfDocument();
-    final page = document.pages.add();
-    final graphics = page.graphics;
-
-    // Professional header
-    double yPosition = _drawProfessionalHeader(graphics, page, 'Fee Challan');
-    yPosition += 30;
-
-    final pageWidth = page.getClientSize().width;
-    final contentWidth = pageWidth - 100; // 50 margin on each side
-    final leftColumnX = 60.0;
-    final rightColumnX = leftColumnX + (contentWidth / 2);
-    final columnWidth =
-        (contentWidth / 2) - 20; // 20 for spacing between columns
-
-    // Fee challan details section - Clean design
-    yPosition = _drawSectionHeader(
-      graphics,
-      'FEE CHALLAN DETAILS',
-      yPosition,
-      pageWidth,
-    );
-
-    // Challan information
-    final challanNumber = 'CH-${DateTime.now().millisecondsSinceEpoch}';
-    final currentDate = DateTime.now();
-    final dueDateStr =
-        dueDate ??
-        '${currentDate.add(const Duration(days: 15)).day}/${currentDate.add(const Duration(days: 15)).month}/${currentDate.add(const Duration(days: 15)).year}';
-
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
-      'Challan No:',
-      challanNumber,
-      leftColumnX,
-      yPosition,
-      maxWidth: columnWidth,
-    );
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
-      'Issue Date:',
-      '${currentDate.day}/${currentDate.month}/${currentDate.year}',
-      rightColumnX,
-      yPosition,
-      maxWidth: columnWidth,
-    );
-    yPosition += 25;
-
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
-      'Student Name:',
-      student.name,
-      leftColumnX,
-      yPosition,
-      maxWidth: columnWidth,
-    );
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
-      'Class:',
-      '${classModel.grade} ${classModel.section}',
-      rightColumnX,
-      yPosition,
-      maxWidth: columnWidth,
-    );
-    yPosition += 25;
-
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
-      'Academic Year:',
-      classModel.year,
-      leftColumnX,
-      yPosition,
-      maxWidth: columnWidth,
-    );
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
-      'Fee Month:',
-      '$month $year',
-      rightColumnX,
-      yPosition,
-      maxWidth: columnWidth,
-    );
-    yPosition += 25;
-
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
-      'Due Date:',
-      dueDateStr,
-      leftColumnX,
-      yPosition,
-      maxWidth: columnWidth,
-    );
-    yPosition += 50;
-
-    // Beautiful fee breakdown section
-    yPosition = _drawSectionHeader(
-      graphics,
-      'FEE BREAKDOWN',
-      yPosition,
-      pageWidth,
-    );
-
-    // Create a beautiful fee breakdown card
-    final feeTableRect = Rect.fromLTWH(50, yPosition, contentWidth, 80);
-    graphics.drawRectangle(
-      brush: PdfSolidBrush(PdfColor(248, 249, 250)),
-      pen: PdfPen(_borderColor, width: 1),
-      bounds: feeTableRect,
-    );
-
-    yPosition += 15;
-
-    // Fee details
-    final monthlyFee = classModel.monthlyFee;
-
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
-      'Monthly Tuition Fee:',
-      'Rs. ${monthlyFee.toStringAsFixed(2)}',
-      leftColumnX,
-      yPosition,
-      maxWidth: columnWidth,
-    );
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
-      'Extra Dues:',
-      'Rs. ${extraDues.toStringAsFixed(2)}',
-      rightColumnX,
-      yPosition,
-      maxWidth: columnWidth,
-    );
-    yPosition += 25;
-
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
-      'Late Fee:',
-      'Rs. 0.00',
-      leftColumnX,
-      yPosition,
-      maxWidth: columnWidth,
-    );
-    _drawDetailRow(
-      graphics,
-      _bodyFont,
-      _subHeaderFont,
-      'Discount:',
-      'Rs. 0.00',
-      rightColumnX,
-      yPosition,
-      maxWidth: columnWidth,
-    );
-    yPosition += 40;
-
-    // Beautiful total amount section
-    graphics.drawString(
-      'TOTAL AMOUNT DUE',
-      _headerFont,
-      bounds: Rect.fromLTWH(50, yPosition, contentWidth, 20),
-      brush: PdfSolidBrush(_primaryColor),
-    );
-    yPosition += 30;
-
-    // Elegant total amount card
-    final totalAmountRect = Rect.fromLTWH(50, yPosition, contentWidth, 45);
-    graphics.drawRectangle(
-      brush: PdfSolidBrush(PdfColor(240, 248, 255)), // Light blue background
-      pen: PdfPen(_primaryColor, width: 2),
-      bounds: totalAmountRect,
-    );
-
-    graphics.drawString(
-      'Rs. ${feeAmount.toStringAsFixed(2)}',
-      PdfStandardFont(PdfFontFamily.helvetica, 26, style: PdfFontStyle.bold),
-      bounds: Rect.fromLTWH(60, yPosition + 10, contentWidth - 20, 35),
-      brush: PdfSolidBrush(_primaryColor),
-      format: PdfStringFormat(alignment: PdfTextAlignment.center),
-    );
-    yPosition += 65;
-
-    // Beautiful payment instructions
-    graphics.drawString(
-      'PAYMENT INSTRUCTIONS',
-      _subHeaderFont,
-      bounds: Rect.fromLTWH(50, yPosition, contentWidth, 15),
-      brush: PdfSolidBrush(_primaryColor),
-    );
-
-    // Add subtle underline
-    graphics.drawLine(
-      PdfPen(_primaryColor, width: 1),
-      Offset(50, yPosition + 20),
-      Offset(250, yPosition + 20),
-    );
-    yPosition += 30;
-
-    final instructions = [
-      '• Payment can be made at the academy reception',
-      '• Please bring this challan when making payment',
-      '• Payment can be made by cash or bank transfer',
-      '• Late fee may apply after due date',
-      '• For queries, contact: ${_academyContact.split('|').first.trim()}',
-    ];
-
-    // Instructions with beautiful styling
-    for (final instruction in instructions) {
-      graphics.drawString(
-        instruction,
-        _bodyFont,
-        bounds: Rect.fromLTWH(50, yPosition, contentWidth, 15),
-        brush: PdfSolidBrush(PdfColor(73, 80, 87)),
-      );
-      yPosition += 18;
-    }
-
-    // Professional footer
-    _drawProfessionalFooter(graphics, page, copyType: 'Fee Challan');
-
-    final bytes = Uint8List.fromList(await document.save());
-    document.dispose();
-    return bytes;
-  }
-
   // Generate batch fee challans with preview
   static Future<void> generateBatchFeeChallans({
     required ClassModel classModel,
@@ -1848,7 +1606,7 @@ class PDFService {
         graphics,
         _bodyFont,
         _subHeaderFont,
-        'Student Name:',
+        'Student:',
         student.name,
         leftColumnX,
         yPosition,
@@ -1870,7 +1628,7 @@ class PDFService {
         graphics,
         _bodyFont,
         _subHeaderFont,
-        'Academic Year:',
+        'Year:',
         classModel.year,
         leftColumnX,
         yPosition,
@@ -1929,7 +1687,7 @@ class PDFService {
         'Rs. ${monthlyFee.toStringAsFixed(2)}',
         leftColumnX,
         yPosition,
-        maxWidth: columnWidth,
+        maxWidth: 325,
       );
       _drawDetailRow(
         graphics,
@@ -1951,7 +1709,7 @@ class PDFService {
         'Rs. 0.00',
         leftColumnX,
         yPosition,
-        maxWidth: columnWidth,
+        maxWidth: 325,
       );
       _drawDetailRow(
         graphics,
@@ -1963,7 +1721,7 @@ class PDFService {
         yPosition,
         maxWidth: columnWidth,
       );
-      yPosition += 40;
+      yPosition += 50;
 
       // Beautiful total amount section
       graphics.drawString(

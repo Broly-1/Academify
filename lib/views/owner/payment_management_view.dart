@@ -22,6 +22,7 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
   ClassModel? _selectedClass;
   List<Student> _students = [];
   List<Payment> _payments = [];
+  List<Payment> _overduePayments = [];
 
   String _selectedMonth = _getMonthName(DateTime.now().month);
   int _selectedYear = DateTime.now().year;
@@ -32,14 +33,17 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
   int _totalPayments = 0;
   int _paidPayments = 0;
   int _unpaidPayments = 0;
-  int _overduePayments = 0;
+  int _overduePaymentsCount = 0;
   double _totalRevenue = 0.0;
   double _pendingRevenue = 0.0;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 4,
+      vsync: this,
+    ); // Changed from 3 to 4
     _loadClasses();
   }
 
@@ -100,6 +104,13 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
         year: _selectedYear,
       );
 
+      // Get overdue payments for this class
+      final overduePayments = await PaymentService.getClassOverduePayments(
+        classId: _selectedClass!.id,
+        month: _selectedMonth,
+        year: _selectedYear,
+      );
+
       // Calculate statistics
       final stats = await PaymentService.getClassPaymentStats(
         classId: _selectedClass!.id,
@@ -107,18 +118,14 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
         year: _selectedYear,
       );
 
-      final overduePayments = await PaymentService.getOverduePayments();
-      final classOverdueCount = overduePayments
-          .where((p) => p.classId == _selectedClass!.id)
-          .length;
-
       setState(() {
         _students = students;
         _payments = payments;
+        _overduePayments = overduePayments;
         _totalPayments = stats['totalPayments'] ?? 0;
         _paidPayments = stats['paidPayments'] ?? 0;
         _unpaidPayments = stats['unpaidPayments'] ?? 0;
-        _overduePayments = classOverdueCount;
+        _overduePaymentsCount = overduePayments.length;
         _totalRevenue = stats['totalRevenue'] ?? 0.0;
         _pendingRevenue = stats['pendingRevenue'] ?? 0.0;
       });
@@ -413,6 +420,7 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
           tabs: const [
             Tab(text: 'Overview'),
             Tab(text: 'Students'),
+            Tab(text: 'Overdue'),
             Tab(text: 'Receipts'),
           ],
         ),
@@ -429,6 +437,7 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
                       children: [
                         _buildOverviewTab(),
                         _buildStudentsTab(),
+                        _buildOverdueTab(),
                         _buildReceiptsTab(),
                       ],
                     ),
@@ -561,7 +570,7 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
                   ),
                   _buildStatCard(
                     'Overdue',
-                    '$_overduePayments',
+                    '$_overduePaymentsCount',
                     Icons.warning,
                     Colors.red,
                   ),
@@ -965,6 +974,253 @@ class _PaymentManagementViewState extends State<PaymentManagementView>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildOverdueTab() {
+    if (_overduePayments.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.check_circle, size: 64, color: Colors.green),
+            SizedBox(height: 16),
+            Text(
+              'No overdue payments',
+              style: TextStyle(fontSize: 18, color: Colors.grey),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'All payments are up to date!',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        // Warning header
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.red.shade50,
+            border: Border.all(color: Colors.red.shade200),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.warning, color: Colors.red.shade700),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Overdue Payments Alert',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red.shade700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${_overduePayments.length} payment(s) are overdue and require immediate attention.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.red.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Overdue payments list
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: _overduePayments.length,
+            itemBuilder: (context, index) {
+              final payment = _overduePayments[index];
+              final student = _students.firstWhere(
+                (s) => s.id == payment.studentId,
+                orElse: () => Student(
+                  id: payment.studentId,
+                  name: 'Unknown Student',
+                  parentContact: '',
+                ),
+              );
+
+              final daysPastDue = DateTime.now()
+                  .difference(payment.dueDate)
+                  .inDays;
+
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red.shade300, width: 1),
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.red,
+                      child: Text(
+                        '$daysPastDue',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      student.name,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Amount: Rs. ${payment.amount}'),
+                        Text(
+                          'Due: ${payment.dueDate.day}/${payment.dueDate.month}/${payment.dueDate.year}',
+                        ),
+                        Text(
+                          '$daysPastDue days overdue',
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        if (payment.notes?.contains('OVERDUE') == true)
+                          const Text(
+                            'Multiple challans created',
+                            style: TextStyle(
+                              color: Colors.orange,
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                      ],
+                    ),
+                    trailing: PopupMenuButton(
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'pay',
+                          child: Text('Mark as Paid'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'details',
+                          child: Text('View Details'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'contact',
+                          child: Text('Contact Student'),
+                        ),
+                      ],
+                      onSelected: (value) async {
+                        if (value == 'pay') {
+                          await _markOverduePaymentAsPaid(payment);
+                        } else if (value == 'details') {
+                          _showPaymentDetails(payment, student);
+                        } else if (value == 'contact') {
+                          _showContactStudent(student);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _markOverduePaymentAsPaid(Payment payment) async {
+    try {
+      await PaymentService.markOverduePaymentAsPaid(
+        paymentId: payment.id,
+        paymentMethod: 'Cash', // Default payment method
+      );
+      _showSuccessSnackBar('Overdue payment marked as paid');
+      _loadClassData();
+    } catch (e) {
+      _showErrorSnackBar('Failed to mark overdue payment as paid: $e');
+    }
+  }
+
+  void _showPaymentDetails(Payment payment, Student student) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Payment Details'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Student: ${student.name}'),
+            const SizedBox(height: 8),
+            Text('Amount: Rs. ${payment.amount}'),
+            const SizedBox(height: 8),
+            Text(
+              'Due Date: ${payment.dueDate.day}/${payment.dueDate.month}/${payment.dueDate.year}',
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Days Overdue: ${DateTime.now().difference(payment.dueDate).inDays}',
+            ),
+            if (payment.notes != null) ...[
+              const SizedBox(height: 8),
+              Text('Notes: ${payment.notes}'),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showContactStudent(Student student) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Contact Student'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Student: ${student.name}'),
+            const SizedBox(height: 8),
+            Text('Contact: ${student.parentContact}'),
+            const SizedBox(height: 16),
+            const Text(
+              'You can contact the student or parent regarding the overdue payment.',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
     );
   }
 }

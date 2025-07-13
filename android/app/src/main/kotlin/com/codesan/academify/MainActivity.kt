@@ -1,4 +1,4 @@
-package com.codesan.tuition_app
+package com.codesan.academify
 
 import io.flutter.embedding.android.FlutterActivity
 
